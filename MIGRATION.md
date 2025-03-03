@@ -1,158 +1,122 @@
-# Deployment Guide
+# Panduan Deployment ke Production
 
-## 1. Server Requirements
+## Persiapan Environment
 
+1. Salin `.env.example` ke `.env.production`
+2. Generate APP_KEY baru:
 ```bash
-# Update system
-sudo apt update && sudo apt upgrade -y
-
-# Install dependencies
-sudo apt install -y git curl unzip nginx mariadb-server \
-    php8.2-fpm php8.2-cli php8.2-common php8.2-mysql \
-    php8.2-zip php8.2-gd php8.2-mbstring php8.2-curl \
-    php8.2-xml php8.2-bcmath php8.2-intl php8.2-opcache
-
-# Install Node.js 18
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install -y nodejs
-
-# Install Composer
-curl -sS https://getcomposer.org/installer | sudo php -- --install-dir=/usr/local/bin --filename=composer
-
-# Install image optimization tools (optional)
-sudo apt-get install -y jpegoptim optipng pngquant gifsicle webp
+php artisan key:generate --env=production
 ```
+3. Sesuaikan konfigurasi database di `.env.production`:
+   - DB_HOST
+   - DB_DATABASE
+   - DB_USERNAME
+   - DB_PASSWORD
 
-## 2. Database Setup
+4. Sesuaikan APP_URL dan ASSET_URL sesuai domain production
 
-```sql
-CREATE DATABASE event_stembayo;
-CREATE USER 'event_user'@'localhost' IDENTIFIED BY 'your_password';
-GRANT ALL PRIVILEGES ON event_stembayo.* TO 'event_user'@'localhost';
-FLUSH PRIVILEGES;
-```
+## Build Assets
 
-## 3. Application Setup
-
+1. Install dependencies:
 ```bash
-# Clone and set permissions
-cd /var/www
-sudo git clone https://github.com/username/bursa-event-sekolah.git event
-cd event
-sudo chown -R www-data:www-data /var/www/event
-sudo find /var/www/event -type f -exec chmod 644 {} \;
-sudo find /var/www/event -type d -exec chmod 755 {} \;
-sudo chmod -R 775 storage bootstrap/cache
-
-# Install dependencies
 composer install --optimize-autoloader --no-dev
 npm install
-
-# Environment setup
-cp .env.example .env
-php artisan key:generate
 ```
 
-### Production .env Configuration
-```env
-APP_NAME="Bursa Event Sekolah"
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://event.stembayo.sch.id
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_DATABASE=event_stembayo
-DB_USERNAME=event_user
-DB_PASSWORD=your_password
-
-VITE_SERVER=false
-ASSET_URL=https://event.stembayo.sch.id
-```
-
-### Initialize Application
+2. Build assets untuk production:
 ```bash
-php artisan migrate --seed
-php artisan storage:link
-php artisan optimize
 npm run build
-php artisan filament:assets
 ```
 
-## 4. Nginx Configuration
-
-```nginx
-server {
-    listen 80;
-    server_name event.stembayo.sch.id;
-    root /var/www/event/public;
-
-    index index.php;
-    charset utf-8;
-
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    # Handle static assets
-    location ~* \.(css|js|jpg|jpeg|png|gif|ico|svg|woff|woff2|ttf|eot)$ {
-        expires 30d;
-        access_log off;
-        add_header Cache-Control "public, no-transform";
-        try_files $uri $uri/ /index.php?$query_string;
-    }
-
-    location ~ \.php$ {
-        fastcgi_pass unix:/var/run/php/php8.2-fpm.sock;
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;
-        include fastcgi_params;
-    }
-
-    location ~ /\.(?!well-known).* {
-        deny all;
-    }
-}
-```
-
-## 5. SSL Setup
+3. Optimize Laravel:
 ```bash
-sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d event.stembayo.sch.id
-```
-
-## Maintenance & Updates
-
-```bash
-cd /var/www/event
-git pull origin main
-composer install --optimize-autoloader --no-dev
-php artisan migrate --force
-npm install && npm run build
+php artisan optimize:clear
 php artisan optimize
-php artisan filament:assets
+php artisan view:cache
+php artisan config:cache
 ```
+
+## Setup Storage & Permissions
+
+1. Buat symbolic link untuk storage:
+```bash
+php artisan storage:link
+```
+
+2. Set permissions:
+```bash
+chmod -R 775 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+```
+
+## Database Migration
+
+1. Jalankan migration:
+```bash
+php artisan migrate --force
+```
+
+2. Cache permissions (jika menggunakan spatie/laravel-permission):
+```bash
+php artisan permission:cache-reset
+```
+
+## Checklist Deployment
+
+- [ ] Environment file (.env.production) sudah dikonfigurasi
+- [ ] APP_KEY sudah di-generate
+- [ ] Database credentials sudah benar
+- [ ] Assets sudah di-build (npm run build)
+- [ ] Storage symlink sudah dibuat
+- [ ] Permissions folder sudah diset
+- [ ] Cache sudah di-optimize
+- [ ] Database sudah di-migrate
 
 ## Troubleshooting
 
-### Assets Issues
-1. Rebuild assets: `npm run build`
-2. Check VITE_SERVER=false in .env
-3. Verify ASSET_URL configuration
-4. Clear caches:
+### Error 500
+1. Periksa Laravel logs di `storage/logs/laravel.log`
+2. Pastikan APP_KEY sudah ter-generate
+3. Periksa permissions storage dan bootstrap/cache
+4. Periksa koneksi database
+
+### CSS Tidak Terload
+1. Pastikan ASSET_URL sesuai dengan domain
+2. Rebuild assets dengan `npm run build`
+3. Clear cache:
 ```bash
+php artisan optimize:clear
 php artisan view:clear
-php artisan cache:clear
-php artisan route:clear
-php artisan config:clear
 ```
 
-### Permission Issues
-```bash
-sudo chmod -R 775 storage bootstrap/cache
-sudo chown -R www-data:www-data /var/www/event
-```
+## Requirements
 
-## Default Account
+- PHP >= 8.1
+- Node.js >= 16
+- MySQL >= 8.0
+- Composer >= 2.0
+- npm >= 7.0
 
-- Email: admin@admin.com
-- Password: password
+## Post-Deployment Verification
+
+1. Test akses ke homepage
+2. Verifikasi assets (CSS/JS) terload dengan benar
+3. Test fitur login/register
+4. Monitor error logs
+5. Periksa performance dengan developer tools
+
+## Rollback Plan
+
+Jika terjadi masalah serius setelah deployment:
+
+1. Restore database backup terakhir
+2. Rollback ke versi terakhir yang stabil
+3. Clear semua cache
+4. Restart web server
+
+## Maintenance
+
+- Backup database secara regular
+- Monitor error logs
+- Update dependencies secara berkala
+- Periksa security updates

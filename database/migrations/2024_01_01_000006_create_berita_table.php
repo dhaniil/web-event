@@ -10,12 +10,17 @@ return new class extends Migration
     {
         Schema::create('berita', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('event_id')->constrained()->onDelete('cascade');
-            $table->string('judul');
-            $table->text('konten');
+            $table->string('title');
+            $table->string('slug')->unique();
+            $table->text('excerpt')->nullable();
+            $table->text('content');
             $table->string('image')->nullable();
+            $table->string('category');
+            $table->foreignId('author_id')->constrained('users')->onDelete('cascade');
             $table->string('status')->default('draft');
             $table->timestamp('published_at')->nullable();
+            $table->unsignedInteger('views')->default(0);
+            $table->softDeletes();
             $table->timestamps();
         });
     }

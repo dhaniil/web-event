@@ -25,8 +25,18 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <!-- Styles & Scripts -->
+    @vite([
+        'resources/css/app.css',
+        'resources/css/dashboard.css',
+        'resources/css/empty-state.css',
+        'resources/css/show.css',
+        'resources/css/eventonly.css',
+        'resources/css/profile.css',
+        'resources/css/sidebar.css',
+        'resources/css/create.css',
+        'resources/js/app.js'
+    ])
     @stack('styles')
 </head>
 <body class="font-sans antialiased bg-[#f8f9fa]">

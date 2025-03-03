@@ -65,7 +65,15 @@ class AdminPanelProvider extends PanelProvider
                 FilamentShieldPlugin::make(),
 
             ])
-            ->maxContentWidth('full')
+            ->maxContentWidth('7xl')
+            ->sidebarWidth('16rem')
+            ->sidebarCollapsibleOnDesktop()
+            ->navigationGroups([
+                'Content',
+                'Settings',
+                'Access Control'
+            ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->authMiddleware([
                 Authenticate::class,
             ]);

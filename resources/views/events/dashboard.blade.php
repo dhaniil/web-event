@@ -1021,7 +1021,7 @@
 @endsection
 
 @section('scripts')
-<script src="{{ asset('js/filament/dashboard/move.js') }}"></script>
+@vite(['resources/js/filament/dashboard/move.js'])
 <script type="text/javascript" defer>
 // Enhanced animation function with smoother transitions
 function animateCards() {

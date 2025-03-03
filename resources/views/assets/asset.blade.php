@@ -9,8 +9,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
 <!--Logo -->
-<link rel="stylesheet" href="{{ asset('css/assets/asset.css') }}">
-<link rel="icon" href="https://i.ibb.co.com/P5Lyxyc/stmby.png" type="image/icon"> 
+@vite(['resources/css/assets/asset.css'])
+<link rel="icon" href="{{ asset('storage/assets/stembayo.png') }}" type="image/icon">
 
 <div class="content">
     @yield('asset')

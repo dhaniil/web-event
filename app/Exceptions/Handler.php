@@ -18,10 +18,21 @@ class Handler extends ExceptionHandler
             if ($this->isHttpException($e)) {
                 $statusCode = $e->getStatusCode();
                 
-                if (view()->exists("errors.{$statusCode}")) {
-                    return response()->view("errors.{$statusCode}", [], $statusCode);
+                if ($statusCode === 500) {
+                    return response()->view('errors.500', [
+                        'message' => app()->environment('production') ? 'Server Error' : $e->getMessage()
+                    ], 500);
+                }
+
+                if ($statusCode === 404) {
+                    return response()->view('errors.404', [], 404);
                 }
             }
+            
+            if (app()->environment('production')) {
+                return response()->view('errors.500', ['message' => 'Server Error'], 500);
+            }
+            
             return null;
         });
     }
