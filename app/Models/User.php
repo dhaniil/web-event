@@ -10,6 +10,8 @@ use Filament\Panel;
 use Spatie\Permission\Traits\HasRoles;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
+use Illuminate\Support\Facades\Log;
+use Spatie\Permission\Models\Role;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -103,5 +105,39 @@ class User extends Authenticatable implements FilamentUser
         } else {
             $this->attributes['password'] = bcrypt($value);
         }
+    }
+
+    public static function getStats(): array
+    {
+        Log::info('Calculating user stats...');
+        
+        // Get all available roles
+        $roles = Role::all();
+        Log::info('Available roles: ' . $roles->pluck('name'));
+        
+        $totalUsers = static::count();
+        Log::info('Total users: ' . $totalUsers);
+        
+        $newUsers = static::where('created_at', '>=', now()->subDays(7))->count();
+        
+        $roleCounts = [];
+        foreach ($roles as $role) {
+            $count = static::role($role->name)->count();
+            $roleCounts[$role->name] = $count;
+            Log::info("{$role->name} count: {$count}");
+        }
+        
+        // Check users without roles
+        $noRoleCount = static::whereDoesntHave('roles')->count();
+        Log::info('Users without roles: ' . $noRoleCount);
+        
+        $userIncrease = $totalUsers > 0 ? round(($newUsers / $totalUsers) * 100, 1) : 0;
+
+        return array_merge([
+            'total' => $totalUsers,
+            'new' => $newUsers,
+            'increase' => $userIncrease,
+            'no_role' => $noRoleCount
+        ], $roleCounts);
     }
 }

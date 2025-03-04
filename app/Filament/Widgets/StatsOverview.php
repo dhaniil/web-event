@@ -21,14 +21,14 @@ class StatsOverview extends BaseWidget
                 ->chart([7, 4, 6, 8, 5, 9, 10])
                 ->color('primary'),
 
-            Stat::make('Total Berita', $totalEvents)
+            Stat::make('Total Berita', \App\Models\Berita::count())
                 ->description('Total Berita')
-                ->descriptionIcon('heroicon-m-calendar')
+                ->descriptionIcon('heroicon-m-newspaper')
                 ->chart([7, 4, 6, 8, 5, 9, 10])
-                ->color('primary'),
+                ->color('success'),
 
-            Stat::make('Event paling sering dikunjungi', $mostVisited ? $mostVisited->visit_count : 0)
-                ->description($mostVisited ? $mostVisited->name : 'Tidak ada')
+            Stat::make('Event paling sering dikunjungi', $mostVisited ? ($mostVisited->visit_count ?? 0) : 0)
+                ->description($mostVisited ? ($mostVisited->name ?? 'Tidak ada') : 'Tidak ada')
                 ->descriptionIcon('heroicon-m-eye')
                 ->chart([8, 12, 15, 14, 18, 16, 20])
                 ->color('warning'),
