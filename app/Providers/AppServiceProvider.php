@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\Vite;
-use Filament\Facades\Filament;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\Schema;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -21,12 +21,12 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // Configure Vite manifest path
-        Vite::useManifestFilename('.vite/manifest.json');
+        // Force HTTPS in production
+        if($this->app->environment('production')) {
+            URL::forceScheme('https');
+        }
 
-        // Configure Filament assets
-        Filament::serving(function () {
-            Filament::registerViteTheme('resources/css/filament/admin/theme.css');
-        });
+        // Fix for MySQL versions < 5.7.7 and MariaDB
+        Schema::defaultStringLength(191);
     }
 }

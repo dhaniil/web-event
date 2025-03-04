@@ -1,39 +1,43 @@
+<?php
 
 namespace App\Exceptions;
 
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Throwable;
+use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 
 class Handler extends ExceptionHandler
 {
-    // ...existing code...
+    protected $levels = [
+        //
+    ];
+
+    protected $dontReport = [
+        //
+    ];
+
+    protected $dontFlash = [
+        'current_password',
+        'password',
+        'password_confirmation',
+    ];
 
     public function register(): void
     {
         $this->reportable(function (Throwable $e) {
-            //
+            if ($this->shouldReport($e)) {
+                Log::error('Error: ' . $e->getMessage(), [
+                    'exception' => get_class($e),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine(),
+                    'trace' => $e->getTrace()
+                ]);
+            }
         });
 
-        $this->renderable(function (Throwable $e) {
-            if ($this->isHttpException($e)) {
-                $statusCode = $e->getStatusCode();
-                
-                if ($statusCode === 500) {
-                    return response()->view('errors.500', [
-                        'message' => app()->environment('production') ? 'Server Error' : $e->getMessage()
-                    ], 500);
-                }
-
-                if ($statusCode === 404) {
-                    return response()->view('errors.404', [], 404);
-                }
-            }
-            
-            if (app()->environment('production')) {
-                return response()->view('errors.500', ['message' => 'Server Error'], 500);
-            }
-            
-            return null;
+        $this->renderable(function (HttpException $e) {
+            return response()->view('errors.' . $e->getStatusCode(), [], $e->getStatusCode());
         });
     }
 }

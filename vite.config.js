@@ -17,16 +17,19 @@ export default defineConfig({
                 'resources/css/assets/asset.css',
                 'resources/js/app.js',
                 'resources/js/filament/dashboard/move.js',
-                
-                // Filament theme
                 'resources/css/filament/admin/theme.css'
             ],
             refresh: true,
         }),
     ],
+    resolve: {
+        alias: {
+            '@': '/resources',
+        },
+    },
     build: {
-        manifest: true,
         outDir: 'public/build',
+        emptyOutDir: true,
         rollupOptions: {
             output: {
                 manualChunks: {

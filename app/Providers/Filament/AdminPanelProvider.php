@@ -25,31 +25,10 @@ class AdminPanelProvider extends PanelProvider
     {
         return $panel
             ->default()
-            ->colors([
-                'primary' => [
-                    50  => '235,248,255',
-                    100 => '210,240,255',
-                    200 => '175,225,255',
-                    300 => '140,210,255',
-                    400 => '105,195,255',
-                    500 => '70,180,255',
-                    600 => '55,160,230',
-                    700 => '45,140,200',
-                    800 => '35,120,170',
-                    900 => '25,100,140',
-                    950 => '15,80,110',
-                ],
-            ])
             ->id('admin')
             ->path('admin')
             ->login()
             ->brandName('Stembayo')
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
-            ->pages([
-                Pages\Dashboard::class,
-            ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -61,21 +40,21 @@ class AdminPanelProvider extends PanelProvider
                 DisableBladeIconComponents::class,
                 DispatchServingFilamentEvent::class,
             ])
-            ->plugins([
-                FilamentShieldPlugin::make(),
-
-            ])
-            ->maxContentWidth('7xl')
-            ->sidebarWidth('16rem')
-            ->sidebarCollapsibleOnDesktop()
-            ->navigationGroups([
-                'Content',
-                'Settings',
-                'Access Control'
-            ])
-            ->viteTheme('resources/css/filament/admin/theme.css')
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            ->colors([
+                'primary' => Color::Blue,
+            ])
+            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\\Filament\\Resources')
+            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\\Filament\\Pages')
+            ->pages([
+                Pages\Dashboard::class,
+            ])
+            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\\Filament\\Widgets')
+            ->plugins([
+                FilamentShieldPlugin::make(),
+            ])
+            ->maxContentWidth('full');
     }
 }
