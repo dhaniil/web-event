@@ -1,8 +1,6 @@
 @extends('extend.main')
 
 @section('styles')
-<link rel="stylesheet" href="{{ asset('css/dashboard.css') }}" />
-<link rel="stylesheet" href="{{ asset('css/empty-state.css') }}" />
 <style>
     /* Full page background gradient - modified to remove white bottom */
     body {
@@ -812,6 +810,142 @@
     .carousel, .carousel-inner, .carousel-item {
         background: transparent !important;
     }
+
+    /* Event Grid Styling dengan Judul Inset - Ukuran card diperbesar */
+    .event-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        padding: 20px;
+    }
+
+    /* Event Card dengan rasio 3:4 */
+    .event-card {
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+        overflow: hidden;
+        width: 100%;
+        max-width: 270px; /* Lebar card */
+        margin: 0 auto;
+        position: relative;
+        aspect-ratio: 3/4; /* Rasio 3:4 (lebar:tinggi) */
+        opacity: 0; /* Mulai dengan opacity 0 untuk efek fade-in */
+        transform: translateY(20px); /* Mulai dari posisi lebih rendah */
+    }
+
+    .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .event-link {
+        text-decoration: none;
+        color: inherit;
+        display: block;
+    }
+
+    .event-content {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .event-image-container {
+        position: relative;
+        overflow: hidden;
+        width: 100%;
+        height: 100%; /* Mengisi seluruh card */
+    }
+
+    .event-image {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+
+    .event-card:hover .event-image {
+        transform: scale(1.05);
+    }
+
+    .event-title-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(transparent, rgba(0, 0, 0, 0.7));
+        padding: 20px 15px; /* Padding yang lebih besar untuk judul */
+        transform: translateY(100%);
+        transition: transform 0.3s ease;
+        opacity: 0;
+    }
+
+    .event-card:hover .event-title-overlay {
+        transform: translateY(0);
+        opacity: 1;
+    }
+
+    .event-title-inset {
+        color: white;
+        font-size: 18px; /* Ukuran font judul diperbesar */
+        font-weight: 600;
+        margin: 0;
+        text-align: center;
+    }
+
+    /* Empty state styling */
+    .empty-state {
+        grid-column: 1 / -1;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 30px 0;
+    }
+
+    .empty-state-content {
+        text-align: center;
+    }
+
+    .empty-icon {
+        font-size: 40px;
+        color: #5356ff;
+        margin-bottom: 10px;
+    }
+
+    .empty-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 5px;
+    }
+
+    .empty-message {
+        font-size: 13px;
+        color: #666;
+    }
+
+    /* Responsif untuk tablet */
+    @media (max-width: 992px) {
+        .event-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+    }
+
+    /* Responsif untuk mobile */
+    @media (max-width: 576px) {
+        .event-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    /* Style untuk avatar dari CDN */
+    .cdn-avatar {
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid #f0f4ff;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
 </style>
 @endsection
 
@@ -944,67 +1078,65 @@
                         <div class="col-12 col-md-10 col-lg-8 mx-auto"> <!-- Changed to have proper centering with responsive widths -->
                             <div class="card">
                                 <div class="card-header">
-                                     <div class="header-content">
+                                    <div class="header-content">
                                         <div class="title-container">
                                             <h4 class="title">Events</h4>
                                         </div>
                                         <div class="filter-container">
-                                            <form id="filterForm" action="{{ route('events.dashboard') }}#event" method="GET">
-                                                <div class="filter-grid">
-                                                    <div class="filter-field">
-                                                        <select name="kategori" class="filter-select" id="kategoriSelect">
-                                                            <option value="" {{ request('kategori') == '' ? 'selected' : '' }}>Semua Kategori</option>
-                                                            @php
-                                                                $categories = [
-                                                                    'KTYME Islam', 'KTYME Kristiani', 'KBBP', 'KBPL',
-                                                                    'BPPK', 'KK', 'PAKS', 'KJDK', 'PPBN', 'HUMTIK'
-                                                                ];
-                                                            @endphp
-                                                            @foreach($categories as $category)
-                                                                <option value="{{ $category }}" {{ request('kategori') == $category ? 'selected' : '' }}>
-                                                                    {{ $category }}
-                                                                </option>
-                                                            @endforeach
-                                                        </select>
-                                                    </div>
-                                                    <div class="filter-actions">
-                                                        <button type="submit" class="btn-filter primary">
-                                                            <i class="bi bi-funnel-fill"></i> Filter
-                                                        </button>
-                                                        <a href="{{ route('events.dashboard') }}" class="btn-filter outline">
-                                                            <i class="bi bi-arrow-counterclockwise"></i> Reset
-                                                        </a>
-                                                    </div>
+                                            <div class="filter-grid">
+                                                <div class="filter-field">
+                                                    <select name="kategori" class="filter-select" id="kategoriSelect">
+                                                        <option value="" {{ request('kategori') == '' ? 'selected' : '' }}>Semua Kategori</option>
+                                                        @php
+                                                            $categories = [
+                                                                'KTYME Islam', 'KTYME Kristiani', 'KBBP', 'KBPL',
+                                                                'BPPK', 'KK', 'PAKS', 'KJDK', 'PPBN', 'HUMTIK'
+                                                            ];
+                                                        @endphp
+                                                        @foreach($categories as $category)
+                                                            <option value="{{ $category }}" {{ request('kategori') == $category ? 'selected' : '' }}>
+                                                                {{ $category }}
+                                                            </option>
+                                                        @endforeach
+                                                    </select>
                                                 </div>
-                                            </form>
+                                                <div class="filter-actions">
+                                                    <button type="button" class="filter-button" id="filterButton">
+                                                        <i class="bi bi-funnel-fill"></i> FILTER
+                                                    </button>
+                                                    <button type="button" class="reset-button" id="resetButton">
+                                                        <i class="bi bi-arrow-counterclockwise"></i> RESET
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
 
-
                                 <div class="body-card">
-                                    <div class="atasan-card flex justify-center items-center gap-4 p-4 flex-wrap">
+                                    <div class="event-grid">
                                         @forelse($events as $event)
-                                            <div class="kard transition-all rounded-xl">
-                                                <a href="{{ route('events.show', $event->id) }}" class="img-href no-underline">
-                                                    <div class="p-2 bg-white flex flex-col rounded-xl justify-center items-center">
-                                                        <img src="{{ asset('storage/' . $event->image) }}" alt="Image" class="card-img" loading="lazy">
-                                                        <div class="flex flex-col items-center text-center w-full">
-                                                            <h1 class="head text-lg max-w-sm text-center text-black w-full">{{ $event->name }}</h1>
-                                                            <p class="desc max-w-sm w-full">{{ $event->description }}</p>
+                                            <div class="event-card">
+                                                <a href="{{ route('events.show', $event->id) }}" class="event-link">
+                                                    <div class="event-content">
+                                                        <div class="event-image-container">
+                                                            <img src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->name }}" class="event-image">
+                                                            <div class="event-title-overlay">
+                                                                <h3 class="event-title-inset">{{ $event->name }}</h3>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                 </a>
                                             </div>
                                         @empty
-                                            <div class="w-full py-8 px-4">
-                                                @include('components.empty-state', [
-                                                    'iconClass' => 'bi bi-calendar-x text-indigo-500 text-5xl mb-3',
-                                                    'title' => request('kategori') ? 'Tidak ada event untuk kategori ini' : 'Belum ada event',
-                                                    'message' => request('kategori') 
+                                            <div class="empty-state">
+                                                <div class="empty-state-content">
+                                                    <i class="bi bi-calendar-x empty-icon"></i>
+                                                    <h3 class="empty-title">{{ request('kategori') ? 'Tidak ada event untuk kategori ini' : 'Belum ada event' }}</h3>
+                                                    <p class="empty-message">{{ request('kategori') 
                                                         ? 'Coba pilih kategori lain atau reset filter untuk melihat semua event'
-                                                        : 'Event akan ditampilkan di sini ketika sudah tersedia'
-                                                ])
+                                                        : 'Event akan ditampilkan di sini ketika sudah tersedia' }}</p>
+                                                </div>
                                             </div>
                                         @endforelse
                                     </div>
@@ -1017,184 +1149,119 @@
         </section>
     </main>     
 
+    <script>
+        // Fungsi yang lebih komprehensif untuk mengganti semua avatar
+        document.addEventListener('DOMContentLoaded', function() {
+            // Fungsi untuk mengubah semua avatar ke CDN
+            function replaceAvatarsWithCDN() {
+                // Mencari semua elemen img yang mungkin merupakan avatar
+                const avatarSelectors = [
+                    '.user-avatar', '.avatar-img', '.profile-image', '.profile-picture',
+                    'img[alt="avatar"]', 'img[alt="Avatar"]', 'img[alt="user"]', 'img[alt="User"]',
+                    'img[alt="profile"]', 'img[alt="Profile"]', '.avatar', '.profile-img',
+                    'img[src*="avatar"]', 'img[src*="profile"]', 'img[src*="user"]'
+                ];
+                
+                const avatars = document.querySelectorAll(avatarSelectors.join(', '));
+                
+                // URL avatar default dari CDN - bisa disesuaikan dengan nama pengguna jika tersedia
+                let userInitial = 'User';
+                @auth
+                    userInitial = '{{ substr(auth()->user()->name, 0, 1) }}';
+                @endauth
+                
+                const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${userInitial}&background=4F46E5&color=fff&rounded=true&size=150`;
+                
+                // Ganti semua avatar
+                avatars.forEach(avatar => {
+                    // Handler untuk error loading
+                    avatar.onerror = function() {
+                        this.src = defaultAvatarUrl;
+                        this.onerror = null; // Mencegah loop
+                    };
+                    
+                    // Jika merupakan default avatar atau image tidak ditemukan, langsung ganti
+                    if (avatar.src && (
+                        avatar.src.includes('default-avatar.jpg') || 
+                        avatar.src.includes('avatar.jpg') || 
+                        avatar.src.includes('default-user.png') ||
+                        avatar.src.includes('user-default.jpg')
+                    )) {
+                        avatar.src = defaultAvatarUrl;
+                    }
+                    
+                    // Tambahkan class untuk styling konsisten
+                    avatar.classList.add('cdn-avatar');
+                });
+            }
+            
+            // Jalankan fungsi saat DOM sudah siap
+            replaceAvatarsWithCDN();
+            
+            // Jalankan lagi setelah semua resource dimuat untuk memastikan avatar yang di-load kemudian juga tertangani
+            window.addEventListener('load', replaceAvatarsWithCDN);
+            
+            // Jika ada konten yang di-load secara dinamis (AJAX, Vue, dll)
+            // Bisa tambahkan MutationObserver untuk mendeteksi perubahan DOM
+            const observer = new MutationObserver(function(mutations) {
+                mutations.forEach(function(mutation) {
+                    if (mutation.addedNodes && mutation.addedNodes.length > 0) {
+                        replaceAvatarsWithCDN();
+                    }
+                });
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        });
+    </script>
 
 @endsection
 
 @section('scripts')
-@vite(['resources/js/filament/dashboard/move.js'])
-<script type="text/javascript" defer>
-// Enhanced animation function with smoother transitions
-function animateCards() {
-    const cards = document.querySelectorAll('.kard:not(.fade-up)');
-    cards.forEach((card, index) => {
-        setTimeout(() => {
-            card.classList.add('fade-up');
-        }, 150 * index); // Increased delay between cards for smoother effect
-    });
-}
-
-// Improved scroll behavior for the "Explore Now" button
-document.addEventListener('DOMContentLoaded', () => {
-    const scrollButton = document.getElementById('scroll');
-    if (scrollButton) {
-        scrollButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            const target = document.getElementById('sorotan-event');
-            if (target) {
-                window.scrollTo({
-                    top: target.offsetTop - 50,
-                    behavior: 'smooth'
+    @vite(['resources/js/filament/dashboard/move.js', 'resources/js/events/dashboard.js', 'resources/js/vue-config.js', 'resources/js/resource-error-handler.js'])
+    <script type="text/javascript" defer>
+        // Existing script code...
+        
+        // Script untuk filter event
+        document.addEventListener('DOMContentLoaded', function() {
+            const kategoriSelect = document.getElementById('kategoriSelect');
+            const filterButton = document.getElementById('filterButton');
+            const resetButton = document.getElementById('resetButton');
+            
+            if (filterButton) {
+                filterButton.addEventListener('click', function() {
+                    const selectedKategori = kategoriSelect.value;
+                    const currentUrl = new URL(window.location.href);
+                    
+                    if (selectedKategori) {
+                        currentUrl.searchParams.set('kategori', selectedKategori);
+                    } else {
+                        currentUrl.searchParams.delete('kategori');
+                    }
+                    
+                    window.location.href = currentUrl.toString();
                 });
             }
-        });
-    }
-
-    // Enhanced text animation with transition effect
-    const animatedText = document.getElementById('animated-text');
-    if (animatedText) {
-        const textOptions = ["EVENT STEMBAYO", "Ikuti Keseruannya", "Meriahkan Acaranya", "Jadilah Bagian dari Event"];
-        let currentIndex = 0;
-        
-        function animateText() {
-            // Fade out with downward movement
-            animatedText.classList.remove('fade-in');
-            animatedText.classList.add('fade-out');
             
-            setTimeout(() => {
-                // Change text while invisible
-                currentIndex = (currentIndex + 1) % textOptions.length;
-                animatedText.textContent = textOptions[currentIndex];
-                
-                // Fade in with upward movement (transition is defined in CSS)
-                animatedText.classList.remove('fade-out');
-                animatedText.classList.add('fade-in');
-            }, 500); // Wait for fade-out to complete
-        }
-        
-        // Start animation cycle
-        setInterval(animateText, 4000);
-    }
-    
-    animateCards();
-    initBannerCarousel();
-    
-    const slidesContainer = document.querySelector('.slides');
-    const indicators = document.querySelectorAll('.indicator');
-    const slideCount = document.querySelectorAll('.slide').length;
-    
-    if (slideCount <= 1) return; // Don't initialize carousel if there's only one slide
-    
-    let currentSlide = 0;
-    let intervalId;
-    
-    // Function to move to a specific slide
-    function goToSlide(index) {
-        if (index < 0) index = slideCount - 1;
-        if (index >= slideCount) index = 0;
-        
-        currentSlide = index;
-        slidesContainer.style.transform = `translateX(-${currentSlide * 100}%)`;
-        
-        // Update indicators
-        indicators.forEach((indicator, i) => {
-            indicator.classList.toggle('active', i === currentSlide);
-        });
-    }
-    
-    // Add click events to indicators
-    indicators.forEach((indicator, index) => {
-        indicator.addEventListener('click', () => {
-            clearInterval(intervalId);
-            goToSlide(index);
-            startAutoSlide();
-        });
-    });
-    
-    function startAutoSlide() {
-        clearInterval(intervalId);
-        intervalId = setInterval(() => {
-            goToSlide(currentSlide + 1);
-        }, 5000); // Change slides every 5 seconds
-    }
-    
-    // Start the carousel
-    startAutoSlide();
-    goToSlide(0);
-}
-
-// Your other existing functions...
-function fetchAndUpdateContent(url) {
-    return fetch(url)
-        .then(response => response.text())
-        .then(html => {
-            const temp = document.createElement('div');
-            temp.innerHTML = html;
-            
-            const newEvents = temp.querySelector('.atasan-card');
-            const currentEvents = document.querySelector('.atasan-card');
-            
-            if (newEvents && currentEvents) {
-                currentEvents.innerHTML = newEvents.innerHTML;
-                // Reset and trigger animations after content update
-                const cards = document.querySelectorAll('.kard');
-                cards.forEach(card => card.classList.remove('fade-up'));
-                animateCards();
+            if (resetButton) {
+                resetButton.addEventListener('click', function() {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.delete('kategori');
+                    window.location.href = currentUrl.toString();
+                });
             }
-
-            history.pushState({}, '', url);
+            
+            // Animasi untuk event card
+            const eventCards = document.querySelectorAll('.event-card');
+            eventCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '1';
+                    card.style.transform = 'translateY(0)';
+                }, 100 * index);
+            });
         });
-}
-
-// Handle filter form submit
-document.getElementById('filterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    const form = this;
-    const url = new URL(form.action);
-    const formData = new FormData(form);
-    
-    // Clear previous parameters
-    url.search = '';
-    
-    for (const [key, value] of formData) {
-        if (value) { // Only add parameters with values
-            url.searchParams.append(key, value);
-        }
-    }
-
-    // Add loading state to buttons
-    const submitBtn = form.querySelector('button[type="submit"]');
-    const originalBtnText = submitBtn.innerHTML;
-    submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Loading...';
-    submitBtn.disabled = true;
-    
-    fetchAndUpdateContent(url).finally(() => {
-        // Restore button state
-        submitBtn.innerHTML = originalBtnText;
-        submitBtn.disabled = false;
-    });
-});
-
-// Update reset button selector to match new class
-document.querySelector('.btn-filter.outline').addEventListener('click', function(e) {
-    e.preventDefault();
-    const resetBtn = this;
-    const originalBtnText = resetBtn.innerHTML;
-    resetBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Resetting...';
-    resetBtn.disabled = true;
-    
-    const resetUrl = this.href + '#event';
-    fetchAndUpdateContent(resetUrl).finally(() => {
-        // Restore button state and reset the select field
-        resetBtn.innerHTML = originalBtnText;
-        resetBtn.disabled = false;
-        document.getElementById('kategoriSelect').value = '';
-    });
-});
-
-// Trigger initial animation
-document.addEventListener('DOMContentLoaded', () => {
-    animateCards();
-    initBannerCarousel();
-});
-</script>
+    </script>
 @endsection

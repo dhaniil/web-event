@@ -45,4 +45,17 @@ class FavouriteController extends Controller
 
         return view('favourites.index', compact('favourites', 'user'));
     }
+
+    public function toggleFavourite(Event $event)
+    {
+        $user = auth()->user();
+        
+        if ($user->favouriteEvents()->where('events_id', $event->id)->exists()) {
+            $user->favouriteEvents()->detach($event->id);
+            return response()->json(['favourited' => false]);
+        } else {
+            $user->favouriteEvents()->attach($event->id);
+            return response()->json(['favourited' => true]);
+        }
+    }
 }

@@ -58,6 +58,7 @@ Route::put('/events/{id}', [EventController::class, 'update'])->name('events.upd
 Route::post('/favourite/{event}', [FavouriteController::class, 'favourite'])->name('favourite.add');
 Route::delete('/favourite/{event}', [FavouriteController::class, 'unfavourite'])->name('favourite.remove');
 Route::get('/favourites', [FavouriteController::class, 'favouriteEvents'])->name('favourites');
+Route::post('/events/{event}/favourite', [FavouriteController::class, 'toggleFavourite'])->middleware('auth')->name('events.favourite');
 
 // Berita
 Route::middleware('auth')->group(function () {
