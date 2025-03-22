@@ -9,6 +9,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
+use Carbon\Carbon;
 
 
 class Event extends Model
@@ -64,6 +65,12 @@ class Event extends Model
         'updated_at',
     ];
 
+    protected $casts = [
+        'tanggal_mulai' => 'date',
+        'tanggal_selesai' => 'date',
+        'waktu_mulai' => 'datetime',
+        'waktu_selesai' => 'datetime',
+    ];
 
     public function getImageUrlAttribute()
     {
@@ -103,6 +110,50 @@ class Event extends Model
     public function banners()
     {
         return $this->hasMany(EventBanner::class);
+    }
+
+    // Accessor untuk memastikan format waktu yang konsisten
+    public function getWaktuMulaiAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format('H:i') : null;
+    }
+
+    public function getWaktuSelesaiAttribute($value)
+    {
+        return $value ? Carbon::parse($value)->format('H:i') : null;
+    }
+
+    // Mutator untuk memastikan penyimpanan yang benar
+    public function setWaktuMulaiAttribute($value)
+    {
+        $this->attributes['waktu_mulai'] = $value ? Carbon::parse($value)->format('H:i:s') : null;
+    }
+
+    public function setWaktuSelesaiAttribute($value)
+    {
+        $this->attributes['waktu_selesai'] = $value ? Carbon::parse($value)->format('H:i:s') : null;
+    }
+
+    /**
+     * Get the banner image URL for the event.
+     *
+     * @return string
+     */
+    public function getBannerUrlAttribute()
+    {
+        if ($this->banner) {
+            // Jika banner ada, gunakan itu
+            if (filter_var($this->banner, FILTER_VALIDATE_URL)) {
+                return $this->banner;
+            }
+            
+            return Storage::disk('public')->exists($this->banner)
+                ? asset(Storage::url($this->banner))
+                : $this->getImageUrlAttribute(); // Fallback ke image jika banner tidak ditemukan
+        }
+        
+        // Jika banner tidak ada, gunakan image sebagai fallback
+        return $this->getImageUrlAttribute();
     }
 
 }

@@ -14,7 +14,19 @@ class EventBanner extends Model
     use LogsActivity;
     use HasFactory;
 
-    protected $fillable = ['image'];
+    protected $table = 'event_banners';
+    
+    protected $fillable = [
+        'image',
+        'judul',
+        'deskripsi',
+        'is_active',
+        'urutan'
+    ];
+
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
 
     public function getActivitylogOptions(): LogOptions
     {

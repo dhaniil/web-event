@@ -12,6 +12,7 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Support\Facades\Log;
 use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\Storage;
 
 class User extends Authenticatable implements FilamentUser
 {
@@ -139,5 +140,22 @@ class User extends Authenticatable implements FilamentUser
             'increase' => $userIncrease,
             'no_role' => $noRoleCount
         ], $roleCounts);
+    }
+
+    /**
+     * Get the user's profile picture URL.
+     *
+     * @return string
+     */
+    public function getProfilePictureUrlAttribute()
+    {
+        if ($this->profile_picture) {
+            if (Storage::disk('public')->exists($this->profile_picture)) {
+                return asset('storage/' . $this->profile_picture) . '?v=' . time();
+            }
+        }
+        
+        // Return default avatar
+        return 'https://ui-avatars.com/api/?name=' . substr($this->name, 0, 1) . '&background=5356FF&color=fff&size=150';
     }
 }

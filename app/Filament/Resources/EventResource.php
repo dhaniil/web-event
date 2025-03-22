@@ -20,6 +20,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\Section;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\Filter;
+use Filament\Forms\Components\Get;
+use Closure;
 
 
 class EventResource extends Resource
@@ -70,30 +72,39 @@ class EventResource extends Resource
                                             ->searchable()
                                             ->required(),
 
-                                        DatePicker::make('start_date')
+                                        DatePicker::make('tanggal_mulai')
                                             ->label('Tanggal Mulai')
                                             ->required()
-                                            ->native(false)
-                                            ->displayFormat('d/m/Y'),
+                                            ->default(now()),
 
-                                        TimePicker::make('jam_mulai')
+                                        TimePicker::make('waktu_mulai')
                                             ->label('Jam Mulai')
                                             ->required()
-                                            ->native(false)
-                                            ->displayFormat('H:i'),
+                                            ->default('08:00'),
 
-                                        DatePicker::make('end_date')
+                                        DatePicker::make('tanggal_selesai')
                                             ->label('Tanggal Selesai')
                                             ->required()
-                                            ->native(false)
-                                            ->displayFormat('d/m/Y')
-                                            ->after('start_date'),
+                                            ->default(now())
+                                            ->afterOrEqual('tanggal_mulai')
+                                            ->minDate(fn (Get $get) => $get('tanggal_mulai')),
 
-                                        TimePicker::make('jam_selesai')
+                                        TimePicker::make('waktu_selesai')
                                             ->label('Jam Selesai')
                                             ->required()
-                                            ->native(false)
-                                            ->displayFormat('H:i'),
+                                            ->default('17:00')
+                                            ->after('waktu_mulai')
+                                            ->rules([
+                                                fn (Get $get): Closure => function (string $attribute, $value, Closure $fail) use ($get) {
+                                                    $tanggalMulai = $get('tanggal_mulai');
+                                                    $tanggalSelesai = $get('tanggal_selesai');
+                                                    $waktuMulai = $get('waktu_mulai');
+                                                    
+                                                    if ($tanggalMulai === $tanggalSelesai && $value <= $waktuMulai) {
+                                                        $fail('Jam selesai harus setelah jam mulai jika di hari yang sama');
+                                                    }
+                                                },
+                                            ]),
                                     ]),
                             ]),
 
@@ -155,7 +166,16 @@ class EventResource extends Resource
                                     ->maxSize(5120)
                                     ->directory('events')
                                     ->preserveFilenames()
-                                    ->imageEditor(),
+                                    ->imageEditor()
+                                    ->helperText('Gambar ini akan ditampilkan di dashboard dan kartu event'),
+
+                                    FileUpload::make('banner')
+                                    ->label('Banner Event')
+                                    ->image()
+                                    ->directory('event-banners')
+                                    ->preserveFilenames()
+                                    ->maxSize(5120)
+                                    ->helperText('Banner ini akan ditampilkan di halaman detail event, ukuran yang direkomendasikan: 1200x400px'),
                             ]),
                     ]),
             ]);
@@ -176,11 +196,11 @@ class EventResource extends Resource
                     ->sortable()
                     ->description(fn ($record) => $record->tempat),
 
-                TextColumn::make('start_date')
+                TextColumn::make('tanggal_mulai')
                     ->label('Waktu')
                     ->sortable()
                     ->formatStateUsing(fn ($record) => 
-                        date('d/m/Y', strtotime($record->start_date)) . ' ' . $record->jam_mulai
+                        date('d/m/Y', strtotime($record->tanggal_mulai)) . ' ' . $record->waktu_mulai
                     ),
 
                 TextColumn::make('status')

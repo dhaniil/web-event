@@ -39,6 +39,20 @@
         color: #6b7280;
         text-transform: uppercase;
     }
+
+    /* Navbar sticky */
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        background-color: #fff;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+    
+    /* Menambahkan padding untuk content */
+    .content-area {
+        padding-top: 20px; /* Jarak aman dari navbar */
+    }
 </style>
 <nav class="bg-white fixed w-full p-3 shadow-md z-50">
     <div class="mx-auto flex justify-between items-center">

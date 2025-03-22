@@ -98,22 +98,44 @@
             background: none;
             border: none;
             cursor: pointer;
-            font-size: 18px;
+            font-size: 24px;
             color: #fff;
-            padding: 5px 8px;
+            padding: 0;
             background-color: rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             backdrop-filter: blur(8px);
             transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+        }
+
+        .favorite-btn i {
+            font-size: 20px;
+            transition: color 0.3s ease;
         }
 
         .favorite-btn.active {
+            background-color: rgba(255, 255, 255, 0.3);
+        }
+
+        .favorite-btn.active i {
             color: #ff3366;
         }
 
         .favorite-btn:hover {
             transform: scale(1.1);
             background-color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .favorite-btn:hover i {
+            color: #ff3366;
+        }
+
+        .favorite-btn:active {
+            transform: scale(0.95);
         }
 
         .event-content {
@@ -522,6 +544,34 @@
         .toast-error {
             background-color: #dc3545;
         }
+
+        /* Tambahkan style untuk loading */
+        .fa-spin {
+            animation: fa-spin 2s infinite linear;
+        }
+        
+        @keyframes fa-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(359deg); }
+        }
+
+        /* Tambahan untuk animasi */
+        @keyframes heartBeat {
+            0% { transform: scale(1); }
+            14% { transform: scale(1.3); }
+            28% { transform: scale(1); }
+            42% { transform: scale(1.3); }
+            70% { transform: scale(1); }
+        }
+        
+        .heart-beat {
+            animation: heartBeat 1s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
@@ -531,9 +581,9 @@
 <div class="content-area">
     <div class="event-container">
         <div class="event-header">
-            @if($event->image)
+            @if($event->banner)
                 <div class="event-image-wrapper">
-                    <img src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->name }}" class="event-image">
+                    <img src="{{ $event->banner_url }}" alt="{{ $event->name }}" class="event-image">
                     <div class="event-overlay"></div>
                     
                     <div class="event-title-section">
@@ -542,14 +592,41 @@
                             <span class="event-category">{{ $event->kategori }}</span>
                             <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
                             @auth
-                                <button class="favorite-btn {{ $event->favouritedBy()->where('user_id', auth()->id())->exists() ? 'active' : '' }}"
-                                        onclick="document.getElementById('favouriteForm').submit();">
-                                    <i class="fa-heart {{ $event->favouritedBy()->where('user_id', auth()->id())->exists() ? 'fas' : 'far' }}"></i>
-                                </button>
+                                <div id="favoriteContainer" class="favourite-container">
+                                    <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form" id="favouriteForm">
+                                        @csrf
+                                        <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
+                                            <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             @endauth
                         </div>
                     </div>
                 </div>
+            @elseif($event->image)
+                <div class="event-image-wrapper">
+                    <img src="{{ $event->image_url }}" alt="{{ $event->name }}" class="event-image">
+                    <div class="event-overlay"></div>
+            
+            <div class="event-title-section">
+                <h1>{{ $event->name }}</h1>
+                <div class="event-meta">
+                    <span class="event-category">{{ $event->kategori }}</span>
+                            <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
+                    @auth
+                                <div id="favoriteContainer" class="favourite-container">
+                                    <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form" id="favouriteForm">
+                                        @csrf
+                                        <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
+                                            <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                    @endauth
+                </div>
+            </div>
+        </div>
             @else
                 <div class="event-title-section" style="position: relative; color: #333; margin-bottom: 20px;">
                     <h1>{{ $event->name }}</h1>
@@ -561,13 +638,13 @@
             @endif
             
             <div class="event-content">
-                <div class="event-details">
-                    <div class="detail-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-calendar-alt"></i>
-                        </div>
-                        <div class="detail-info">
-                            <h3>Tanggal</h3>
+            <div class="event-details">
+                <div class="detail-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-calendar-alt"></i>
+                    </div>
+                    <div class="detail-info">
+                        <h3>Tanggal</h3>
                             <p>{{ \Carbon\Carbon::parse($event->tanggal_mulai)->isoFormat('D MMMM Y') }}</p>
                             @if($event->tanggal_selesai && $event->tanggal_selesai != $event->tanggal_mulai)
                                 <p>- {{ \Carbon\Carbon::parse($event->tanggal_selesai)->isoFormat('D MMMM Y') }}</p>
@@ -582,47 +659,47 @@
                         <div class="detail-info">
                             <h3>Waktu</h3>
                             <p class="time">{{ \Carbon\Carbon::parse($event->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($event->waktu_selesai)->format('H:i') }} WIB</p>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-map-marker-alt"></i>
-                        </div>
-                        <div class="detail-info">
-                            <h3>Lokasi</h3>
-                            <p>{{ $event->lokasi ?? 'Tidak disebutkan' }}</p>
-                        </div>
-                    </div>
-                    
-                    <div class="detail-card">
-                        <div class="icon-wrapper">
-                            <i class="fas fa-users"></i>
-                        </div>
-                        <div class="detail-info">
-                            <h3>Penyelenggara</h3>
-                            <p>{{ $event->penyelenggara ?? 'Tidak disebutkan' }}</p>
-                        </div>
                     </div>
                 </div>
-                
+
+                <div class="detail-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+                    <div class="detail-info">
+                        <h3>Lokasi</h3>
+                            <p>{{ $event->lokasi ?? 'Tidak disebutkan' }}</p>
+                    </div>
+                </div>
+
+                <div class="detail-card">
+                    <div class="icon-wrapper">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="detail-info">
+                        <h3>Penyelenggara</h3>
+                            <p>{{ $event->penyelenggara ?? 'Tidak disebutkan' }}</p>
+                    </div>
+                </div>
+            </div>
+
                 <div class="event-description">
-                    <h2>Tentang Event</h2>
+                <h2>Tentang Event</h2>
                     <div>
                         {!! nl2br(e($event->description)) !!}
                     </div>
-                </div>
-                
+            </div>
+
                 <div class="ulasan-section">
                     <div class="ulasan-header">
                         <h2>Ulasan ({{ $event->ulasan()->count() }})</h2>
-                        @auth
+                @auth
                             <button class="tambah-ulasan-btn" onclick="toggleUlasanForm()">
-                                <i class="fas fa-plus"></i> Tambah Ulasan
-                            </button>
-                        @endauth
-                    </div>
-                    
+                            <i class="fas fa-plus"></i> Tambah Ulasan
+                        </button>
+                    @endauth
+                </div>
+
                     @if($event->ulasan()->count() > 0)
                         <!-- Tampilkan ulasan yang ada -->
                         <div class="ulasan-list">
@@ -638,9 +715,9 @@
                                             <div>
                                                 <h4>{{ $ulasan->user->name ?? 'Pengguna' }}</h4>
                                                 <div class="rating">
-                                                    @for($i = 1; $i <= 5; $i++)
+                                    @for($i = 1; $i <= 5; $i++)
                                                         <i class="fas fa-star {{ $i <= $ulasan->rating ? 'text-warning' : 'text-muted' }}"></i>
-                                                    @endfor
+                                    @endfor
                                                 </div>
                                             </div>
                                         </div>
@@ -653,7 +730,7 @@
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
+                            </div>
                     @else
                         <div class="empty-ulasan">
                             <i class="far fa-comment-alt"></i>
@@ -667,213 +744,112 @@
     </div>
 </div>
 
-<script>
-    // Tambahkan di awal script
-    window.onerror = function(message, source, lineno, colno, error) {
-        console.log('Global error handler:', message, source, lineno, colno, error);
-        showToast('Error: ' + message, 'error');
-        return true;
-    };
-    
-    // Tambahkan fungsi ini untuk debug
-    function debugFavourite() {
-        console.log('Available routes:');
-        console.log('/favourite/{event} - POST - {{ route('favourite.add', 1) }}');
-        console.log('/favourite/{event} - DELETE - {{ route('favourite.remove', 1) }}');
-        console.log('/events/{event}/favourite - POST - {{ route('events.favourite', 1) }}');
-    }
-    
-    // Panggil saat halaman dimuat
-    document.addEventListener('DOMContentLoaded', function() {
-        debugFavourite();
-    });
+<!-- Tambahkan debug element di akhir halaman (invisible) -->
+<div id="debug-info" style="display: none;"></div>
 
-    // Fungsi untuk menangani favorite event
-    function toggleFavorite(eventId) {
-        // Implementasi AJAX untuk menangani favorite/unfavorite
-        fetch(`/favourite/${eventId}`, {  // Ubah URL ke endpoint yang benar
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const btn = document.querySelector('.favorite-btn');
-            const icon = btn.querySelector('i');
-            
-            if (data.success) {  // Perhatikan respons dari endpoint menggunakan 'success'
-                btn.classList.add('active');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                // Tambahkan feedback visual
-                showToast('Event ditambahkan ke favorit!', 'success');
-            } else {
-                // Jika sudah favorit, coba unfavorite
-                unfavoriteEvent(eventId);
-            }
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            // Jika error, coba endpoint alternatif
-            tryAlternativeEndpoint(eventId);
-        });
-    }
-    
-    // Fungsi untuk mencoba unfavorite jika sudah favorit
-    function unfavoriteEvent(eventId) {
-        fetch(`/favourite/${eventId}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => response.json())
-        .then(data => {
-            const btn = document.querySelector('.favorite-btn');
-            const icon = btn.querySelector('i');
-            
-            if (data.success) {
-                btn.classList.remove('active');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                showToast('Event dihapus dari favorit!', 'info');
-            }
-        })
-        .catch(error => {
-            console.error('Error unfavoriting:', error);
-            showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
-        });
-    }
-    
-    // Fungsi untuk mencoba endpoint alternatif
-    function tryAlternativeEndpoint(eventId) {
-        fetch(`/events/${eventId}/favourite`, {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Content-Type': 'application/json',
-                'Accept': 'application/json'
-            },
-            body: JSON.stringify({})
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Alternative endpoint failed: ' + response.statusText);
-            }
-            return response.json();
-        })
-        .then(data => {
-            const btn = document.querySelector('.favorite-btn');
-            const icon = btn.querySelector('i');
-            
-            if (data.favourited) {
-                btn.classList.add('active');
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-                showToast('Event ditambahkan ke favorit!', 'success');
-            } else {
-                btn.classList.remove('active');
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-                showToast('Event dihapus dari favorit!', 'info');
-            }
-        })
-        .catch(error => {
-            console.error('Alternative endpoint error:', error);
-            showToast('Tidak dapat menambahkan ke favorit. Silakan coba lagi nanti.', 'error');
-        });
-    }
-    
-    // Fungsi untuk menampilkan toast notification
-    function showToast(message, type = 'info') {
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerHTML = message;
-        document.body.appendChild(toast);
-        
-        // Tampilkan toast
-        setTimeout(() => {
-            toast.classList.add('show');
-        }, 100);
-        
-        // Sembunyikan dan hapus toast setelah 3 detik
-        setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => {
-                document.body.removeChild(toast);
-            }, 300);
-        }, 3000);
-    }
-    
-    // Fungsi untuk mengganti avatar
+<script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Fungsi untuk mengubah semua avatar ke CDN
-        function replaceAvatarsWithCDN() {
-            // Mencari semua elemen img yang mungkin merupakan avatar
-            const avatarSelectors = [
-                '.user-avatar', '.avatar-img', '.profile-image', '.profile-picture',
-                'img[alt="avatar"]', 'img[alt="Avatar"]', 'img[alt="user"]', 'img[alt="User"]',
-                'img[alt="profile"]', 'img[alt="Profile"]', '.avatar', '.profile-img',
-                'img[src*="avatar"]', 'img[src*="profile"]', 'img[src*="user"]'
-            ];
-            
-            const avatars = document.querySelectorAll(avatarSelectors.join(', '));
-            
-            // URL avatar default dari CDN - bisa disesuaikan dengan nama pengguna jika tersedia
-            let userInitial = 'User';
-            @auth
-                userInitial = '{{ substr(auth()->user()->name, 0, 1) }}';
-            @endauth
-            
-            const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${userInitial}&background=4F46E5&color=fff&rounded=true&size=150`;
-            
-            // Ganti semua avatar
-            avatars.forEach(avatar => {
-                // Handler untuk error loading
-                avatar.onerror = function() {
-                    this.src = defaultAvatarUrl;
-                    this.onerror = null; // Mencegah loop
-                };
+        // Cari form dengan ID yang pasti
+        const favoriteForm = document.getElementById('favouriteForm');
+        
+        if (favoriteForm) {
+            // Tambahkan event listener ke form
+            favoriteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
                 
-                // Jika merupakan default avatar atau image tidak ditemukan, langsung ganti
-                if (avatar.src && (
-                    avatar.src.includes('default-avatar.jpg') || 
-                    avatar.src.includes('avatar.jpg') || 
-                    avatar.src.includes('default-user.png') ||
-                    avatar.src.includes('user-default.jpg')
-                )) {
-                    avatar.src = defaultAvatarUrl;
-                }
+                // Ambil elemen button dan icon
+                const btn = this.querySelector('.favorite-btn');
+                const icon = btn.querySelector('i');
+                const originalIcon = icon.className;
                 
-                // Tambahkan class untuk styling konsisten
-                avatar.classList.add('cdn-avatar');
+                // Tampilkan loading
+                icon.className = 'fas fa-spinner fa-spin';
+                
+                // Kirim request dengan metode lebih sederhana
+                fetch(this.action, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': this.querySelector('input[name="_token"]').value,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: new FormData(this)
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        // Update tampilan berdasarkan status favorit
+                        if (data.favourited) {
+                            btn.classList.add('active');
+                            icon.className = 'fas fa-heart';
+                        } else {
+                            btn.classList.remove('active');
+                            icon.className = 'far fa-heart';
+                        }
+                        
+                        // Tampilkan pesan sukses
+                        showToast(data.message, 'success');
+                    } else {
+                        // Kembalikan ikon asli jika gagal
+                        icon.className = originalIcon;
+                        showToast(data.message || 'Terjadi kesalahan', 'error');
+                    }
+                })
+                .catch(error => {
+                    // Kembalikan ikon asli jika terjadi error
+                    icon.className = originalIcon;
+                    showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                });
             });
         }
         
-        // Jalankan fungsi penggantian avatar
-        replaceAvatarsWithCDN();
+        // Deteksi session message
+        @if(session('success'))
+            showToast("{{ session('success') }}", 'success');
+        @endif
         
-        // Deteksi dan hapus error CSS
-        const links = document.querySelectorAll('link[rel="stylesheet"]');
-        links.forEach(link => {
-            const href = link.getAttribute('href');
-            if (href && (href.includes('show.css') || href.includes('empty-state.css') || href.includes('dashboard.css'))) {
-                // Hapus link yang menyebabkan error
-                link.parentNode.removeChild(link);
-            }
-        });
+        @if(session('error'))
+            showToast("{{ session('error') }}", 'error');
+        @endif
+    });
+    
+    // Fungsi toast tetap sama
+    function showToast(message, type = 'info') {
+        const existingToast = document.querySelector('.toast');
+        if (existingToast) {
+            existingToast.remove();
+        }
+        
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type}`;
+        toast.innerText = message;
+        
+        document.body.appendChild(toast);
+        
+        setTimeout(() => toast.classList.add('show'), 10);
+        
+        setTimeout(() => {
+            toast.classList.remove('show');
+            setTimeout(() => toast.remove(), 300);
+        }, 3000);
+    }
+</script>
+
+<script>
+    // Tambahkan setelah script Anda yang sudah ada
+    
+    // Fallback jika Ajax gagal
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Menerapkan fallback regular form submit');
+        
+        // Deteksi jika ada pesan sukses dari session
+        @if(session('success'))
+            showToast("{{ session('success') }}", 'success');
+        @endif
+        
+        // Deteksi jika ada error dari session
+        @if(session('error'))
+            showToast("{{ session('error') }}", 'error');
+        @endif
     });
 </script>
 @endsection
@@ -915,15 +891,19 @@
     
     // Fungsi toggle untuk form ulasan
     function toggleUlasanForm() {
+        console.log('Toggle ulasan form dipanggil');
+        
         const ulasanForm = document.getElementById('ulasanForm');
         
         if (!ulasanForm) {
+            console.log('Membuat form ulasan baru');
+            
             // Jika form belum ada, buat form
             const formContainer = document.createElement('div');
             formContainer.id = 'ulasanForm';
             formContainer.innerHTML = `
                 <div class="form-title">Tambahkan Ulasan</div>
-                <form action="{{ route('ulasan.store') }}" method="POST">
+                <form id="formUlasan">
                     @csrf
                     <input type="hidden" name="event_id" value="{{ $event->id }}">
                     <div class="rating-select">
@@ -971,12 +951,172 @@
             // Aktifkan semua bintang secara default (rating 5)
             stars.forEach(s => s.classList.add('active'));
             
+            // Tambahkan event listener untuk form submission
+            document.getElementById('formUlasan').addEventListener('submit', function(e) {
+                e.preventDefault();
+                console.log('Form ulasan disubmit');
+                
+                const submitBtn = this.querySelector('.submit-btn');
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
+                submitBtn.disabled = true;
+                
+                const formData = new FormData(this);
+                console.log('Form data:', Object.fromEntries(formData));
+                
+                fetch('{{ route("ulasan.store") }}', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                })
+                .then(response => {
+                    console.log('Response status:', response.status);
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Response data:', data);
+                    
+                    if (data.success) {
+                        showToast(data.message || 'Ulasan berhasil ditambahkan', 'success');
+                        
+                        // Tambahkan ulasan baru ke daftar tanpa refresh
+                        addNewUlasanToList({
+                            user: {
+                                name: '{{ auth()->user()->name ?? "Anda" }}'
+                            },
+                            rating: formData.get('rating'),
+                            komentar: formData.get('komentar'),
+                            created_at: 'Baru saja'
+                        });
+                        
+                        // Sembunyikan form
+                        toggleUlasanForm();
+                    } else {
+                        submitBtn.innerHTML = 'Kirim Ulasan';
+                        submitBtn.disabled = false;
+                        showToast(data.message || 'Gagal menambahkan ulasan', 'error');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    submitBtn.innerHTML = 'Kirim Ulasan';
+                    submitBtn.disabled = false;
+                    showToast('Terjadi kesalahan saat mengirim ulasan', 'error');
+                });
+            });
+            
             // Tampilkan form
             formContainer.style.display = 'block';
         } else {
             // Toggle visibility form yang sudah ada
+            console.log('Toggle form yang sudah ada');
             ulasanForm.style.display = ulasanForm.style.display === 'none' ? 'block' : 'none';
         }
     }
+
+    // Fungsi untuk menambahkan ulasan baru ke daftar
+    function addNewUlasanToList(ulasan) {
+        console.log('Menambahkan ulasan baru ke daftar:', ulasan);
+        
+        const emptyUlasan = document.querySelector('.empty-ulasan');
+        if (emptyUlasan) {
+            // Hapus pesan "belum ada ulasan"
+            emptyUlasan.remove();
+            
+            // Buat container ulasan jika belum ada
+            if (!document.querySelector('.ulasan-list')) {
+                const ulasanList = document.createElement('div');
+                ulasanList.className = 'ulasan-list';
+                document.querySelector('.ulasan-section').appendChild(ulasanList);
+            }
+        }
+        
+        const ulasanList = document.querySelector('.ulasan-list');
+        const ulasanItem = document.createElement('div');
+        ulasanItem.className = 'ulasan-item';
+        
+        // Update counter ulasan
+        const counterEl = document.querySelector('.ulasan-header h2');
+        const match = counterEl.textContent.match(/\((\d+)\)/);
+        if (match) {
+            const count = parseInt(match[1]) + 1;
+            counterEl.textContent = counterEl.textContent.replace(/\(\d+\)/, `(${count})`);
+        }
+        
+        // Buat HTML untuk ulasan baru
+        ulasanItem.innerHTML = `
+            <div class="ulasan-header">
+                <div class="user-info">
+                    <img src="https://ui-avatars.com/api/?name=${ulasan.user.name.substr(0, 1)}&background=4F46E5&color=fff&rounded=true&size=40" 
+                         alt="User" 
+                         class="cdn-avatar"
+                         width="40" 
+                         height="40">
+                    <div>
+                        <h4>${ulasan.user.name}</h4>
+                        <div class="rating">
+                            ${Array(5).fill().map((_, i) => 
+                                `<i class="fas fa-star ${i < ulasan.rating ? 'text-warning' : 'text-muted'}"></i>`
+                            ).join('')}
+                        </div>
+                    </div>
+                </div>
+                <div class="ulasan-date">
+                    ${ulasan.created_at}
+                </div>
+            </div>
+            <div class="ulasan-content">
+                ${ulasan.komentar}
+            </div>
+        `;
+        
+        // Tambahkan ke awal daftar
+        if (ulasanList.firstChild) {
+            ulasanList.insertBefore(ulasanItem, ulasanList.firstChild);
+        } else {
+            ulasanList.appendChild(ulasanItem);
+        }
+        
+        // Animasi untuk highlight ulasan baru
+        ulasanItem.style.animation = 'fadeIn 1s';
+    }
 </script>
 @endsection
+
+@if(session('success'))
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        showToast("{{ session('success') }}", 'success');
+    });
+</script>
+@endif
+
+<script>
+    // Deteksi jika JavaScript dinonaktifkan
+    document.documentElement.classList.add('js-enabled');
+</script>
+
+<noscript>
+    <style>
+        /* Tampilkan formulir biasa jika JavaScript dinonaktifkan */
+        .js-enabled .favourite-form {
+            display: none;
+        }
+        
+        .favourite-form-fallback {
+            display: block;
+        }
+    </style>
+    
+    <!-- Form fallback untuk browser tanpa JavaScript -->
+    @auth
+        <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form-fallback">
+            @csrf
+            <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
+                <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
+            </button>
+        </form>
+    @endauth
+</noscript>

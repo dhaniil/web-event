@@ -10,25 +10,63 @@ use Illuminate\Support\Facades\Auth;
 
 class FavouriteController extends Controller
 {
-    public function favourite($eventId)
+    public function favourite(Event $event)
     {
         try {
-            $user = Auth::user();
-            if (!$user->favourites()->where('events_id', $eventId)->exists()) {
-                $user->favourites()->attach($eventId);
-                return response()->json(['success' => true]);
+            // Log minimal hanya di development
+            if (app()->environment('local')) {
+                \Log::info('Favourite action started', [
+                    'event_id' => $event->id,
+                    'user_id' => Auth::id()
+                ]);
             }
-            return response()->json(['success' => false, 'message' => 'Already favorited']);
+            
+            $user = Auth::user();
+            $isFavourited = $user->favourites()->where('events_id', $event->id)->exists();
+            
+            if ($isFavourited) {
+                $user->favourites()->detach($event->id);
+                $message = 'Event dihapus dari favorit';
+                $favourited = false;
+            } else {
+                $user->favourites()->attach($event->id);
+                $message = 'Event ditambahkan ke favorit';
+                $favourited = true;
+            }
+            
+            // Response based on request type
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => true,
+                    'favourited' => $favourited,
+                    'message' => $message
+                ]);
+            }
+            
+            return redirect()->back()->with('success', $message);
         } catch (\Exception $e) {
-            return response()->json(['success' => false, 'message' => $e->getMessage()], 500);
+            // Tetap log error di production
+            \Log::error('Error in favourite action', [
+                'event_id' => $event->id,
+                'error' => $e->getMessage()
+            ]);
+            
+            if (request()->ajax() || request()->wantsJson() || request()->header('X-Requested-With') === 'XMLHttpRequest') {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Terjadi kesalahan. Silakan coba lagi.'
+                ], 500);
+            }
+            
+            return redirect()->back()->with('error', 'Terjadi kesalahan. Silakan coba lagi.');
         }
     }
 
-    public function unfavourite($eventId)
+    public function unfavourite(Event $event)
     {
         try {
             $user = Auth::user();
-            $user->favourites()->wherePivot('events_id', $eventId)->detach();
+            $user->favourites()->detach($event->id);
             return response()->json(['success' => true]);
         } catch (\Exception $e) {
             return response()->json(['success' => false, 'message' => $e->getMessage()], 500);

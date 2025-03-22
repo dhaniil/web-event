@@ -1078,37 +1078,37 @@
                         <div class="col-12 col-md-10 col-lg-8 mx-auto"> <!-- Changed to have proper centering with responsive widths -->
                             <div class="card">
                                 <div class="card-header">
-                                    <div class="header-content">
+                                     <div class="header-content">
                                         <div class="title-container">
                                             <h4 class="title">Events</h4>
                                         </div>
                                         <div class="filter-container">
-                                            <div class="filter-grid">
-                                                <div class="filter-field">
-                                                    <select name="kategori" class="filter-select" id="kategoriSelect">
-                                                        <option value="" {{ request('kategori') == '' ? 'selected' : '' }}>Semua Kategori</option>
-                                                        @php
-                                                            $categories = [
-                                                                'KTYME Islam', 'KTYME Kristiani', 'KBBP', 'KBPL',
-                                                                'BPPK', 'KK', 'PAKS', 'KJDK', 'PPBN', 'HUMTIK'
-                                                            ];
-                                                        @endphp
-                                                        @foreach($categories as $category)
-                                                            <option value="{{ $category }}" {{ request('kategori') == $category ? 'selected' : '' }}>
-                                                                {{ $category }}
-                                                            </option>
-                                                        @endforeach
-                                                    </select>
-                                                </div>
-                                                <div class="filter-actions">
+                                                <div class="filter-grid">
+                                                    <div class="filter-field">
+                                                        <select name="kategori" class="filter-select" id="kategoriSelect">
+                                                            <option value="" {{ request('kategori') == '' ? 'selected' : '' }}>Semua Kategori</option>
+                                                            @php
+                                                                $categories = [
+                                                                    'KTYME Islam', 'KTYME Kristiani', 'KBBP', 'KBPL',
+                                                                    'BPPK', 'KK', 'PAKS', 'KJDK', 'PPBN', 'HUMTIK'
+                                                                ];
+                                                            @endphp
+                                                            @foreach($categories as $category)
+                                                                <option value="{{ $category }}" {{ request('kategori') == $category ? 'selected' : '' }}>
+                                                                    {{ $category }}
+                                                                </option>
+                                                            @endforeach
+                                                        </select>
+                                                    </div>
+                                                    <div class="filter-actions">
                                                     <button type="button" class="filter-button" id="filterButton">
                                                         <i class="bi bi-funnel-fill"></i> FILTER
-                                                    </button>
+                                                        </button>
                                                     <button type="button" class="reset-button" id="resetButton">
                                                         <i class="bi bi-arrow-counterclockwise"></i> RESET
                                                     </button>
+                                                    </div>
                                                 </div>
-                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -1214,8 +1214,8 @@
             observer.observe(document.body, {
                 childList: true,
                 subtree: true
-            });
         });
+    });
     </script>
 
 @endsection
@@ -1261,7 +1261,7 @@
                     card.style.opacity = '1';
                     card.style.transform = 'translateY(0)';
                 }, 100 * index);
-            });
-        });
-    </script>
+    });
+});
+</script>
 @endsection

@@ -27,7 +27,7 @@ Route::get('/home', [EventController::class, 'index'])->name('events.dashboard')
 // Profile
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'editProfile'])->name('profile.edit');
-    Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update');
+    Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update.profile');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update.password');
     Route::post('/profile/update-picture', [ProfileController::class, 'updateProfilePicture'])->name('profile.update.picture');
@@ -55,10 +55,17 @@ Route::get('/events/{id}/edit', [EventController::class, 'edit'])->name('events.
 Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
 
 // Favourite
-Route::post('/favourite/{event}', [FavouriteController::class, 'favourite'])->name('favourite.add');
-Route::delete('/favourite/{event}', [FavouriteController::class, 'unfavourite'])->name('favourite.remove');
-Route::get('/favourites', [FavouriteController::class, 'favouriteEvents'])->name('favourites');
-Route::post('/events/{event}/favourite', [FavouriteController::class, 'toggleFavourite'])->middleware('auth')->name('events.favourite');
+Route::middleware('auth')->group(function () {
+    // Menambahkan/menghapus favorit
+    Route::post('/favourite/{event}', [FavouriteController::class, 'favourite'])
+        ->name('favourite.add');
+    Route::delete('/favourite/{event}', [FavouriteController::class, 'unfavourite'])
+        ->name('favourite.remove');
+    
+    // Halaman daftar favorit
+    Route::get('/favourites', [FavouriteController::class, 'favouriteEvents'])
+        ->name('favourites');
+});
 
 // Berita
 Route::middleware('auth')->group(function () {
