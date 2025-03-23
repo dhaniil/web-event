@@ -6,4 +6,5 @@ return [
     App\Providers\EventServiceProvider::class,
     App\Providers\FilamentThemeServiceProvider::class,
     App\Providers\Filament\AdminPanelProvider::class,
+    App\Providers\TelescopeServiceProvider::class,
 ];

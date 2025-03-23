@@ -375,6 +375,53 @@
         background: rgba(79, 70, 229, 0.1);
         transform: translateY(-1px);
     }
+    
+    /* Tambahan style untuk tombol filter dan reset */
+    .filter-button, .reset-button {
+        height: 45px;
+        padding: 0 1.25rem;
+        border-radius: 8px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.85rem;
+        display: inline-flex;
+        justify-content: center;
+        align-items: center;
+        flex: 1;
+        cursor: pointer;
+        border: 2px solid;
+    }
+    
+    .filter-button {
+        background: #4f46e5;
+        color: white;
+        border-color: #4f46e5;
+    }
+    
+    .filter-button:hover {
+        background: #4338ca;
+        border-color: #4338ca;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+    
+    .reset-button {
+        background: transparent;
+        color: #4f46e5;
+        border-color: #4f46e5;
+    }
+    
+    .reset-button:hover {
+        background: rgba(79, 70, 229, 0.08);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+    }
+    
+    .filter-button:active, .reset-button:active {
+        transform: scale(0.95);
+    }
 
     /* Banner carousel styles - updated for consistent height */
     .carousel .slides {

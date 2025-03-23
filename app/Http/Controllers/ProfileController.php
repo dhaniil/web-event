@@ -2,13 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rules;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Validation\Rules;
-use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -71,88 +73,58 @@ class ProfileController extends Controller
     public function updateProfilePicture(Request $request)
     {
         // Validasi file
-        $validator = \Validator::make($request->all(), [
+        $validator = Validator::make($request->all(), [
             'profile_picture' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:2048']
-        ], [
-            'profile_picture.required' => 'Silakan pilih file gambar terlebih dahulu',
-            'profile_picture.image' => 'File harus berupa gambar',
-            'profile_picture.mimes' => 'Format file harus jpeg, png, jpg, atau gif',
-            'profile_picture.max' => 'Ukuran file maksimal 2MB'
         ]);
 
         if ($validator->fails()) {
-            if ($request->ajax()) {
-                return response()->json(['error' => $validator->errors()->first()], 422);
-            }
-            return redirect()->back()->withErrors($validator)->with('error', $validator->errors()->first());
+            return response()->json(['success' => false, 'error' => $validator->errors()->first()], 422);
         }
 
         try {
             $user = Auth::user();
             $file = $request->file('profile_picture');
-            
+
             // Hapus file lama jika ada
             if ($user->profile_picture && Storage::disk('public')->exists($user->profile_picture)) {
                 Storage::disk('public')->delete($user->profile_picture);
             }
-            
-            // Generate nama file unik dengan format: userID_timestamp_random.extension
+
+            // Generate nama file unik
             $randomStr = Str::random(8);
             $fileName = 'user' . $user->id . '_' . time() . '_' . $randomStr . '.' . $file->getClientOriginalExtension();
-            
+
             // Simpan file ke folder profile-pictures
             $path = $file->storeAs('profile-pictures', $fileName, 'public');
-            
+
             if (!$path) {
                 throw new \Exception('Gagal menyimpan file, periksa permission folder storage');
             }
-            
+
             // Update database
             $updated = DB::table('users')
-            ->where('id', $user->id)
+                ->where('id', $user->id)
                 ->update(['profile_picture' => $path]);
-                
+
             if (!$updated) {
                 throw new \Exception('Gagal mengupdate database');
             }
-            
-            // Clear cache gambar
-            clearstatcache();
-            
-            // Log aktivitas
-        activity()
-            ->useLog('user')
-            ->causedBy($user)
-            ->event('profile_picture_update')
-            ->withProperties(['path' => $path])
-            ->log('User memperbarui foto profil');
 
-            // Return response sesuai request type
-            if ($request->ajax()) {
-                return response()->json([
-                    'success' => true,
-                    'message' => 'Foto profil berhasil diperbarui',
-                    'path' => $path,
-                    'image_url' => asset('storage/' . $path)
-                ]);
-            }
-            
-            return redirect()->back()->with('success', 'Foto profil berhasil diperbarui. Silakan refresh halaman jika foto belum muncul.');
-            
-        } catch (\Exception $e) {
-            // Log error
-            \Log::error('Upload foto profil gagal', [
-                'user_id' => Auth::id(),
-                'error' => $e->getMessage(),
-                'file' => __FILE__,
-                'line' => __LINE__
+            // Log aktivitas
+            activity()
+                ->useLog('user')
+                ->causedBy($user)
+                ->event('profile_picture_update')
+                ->log('User memperbarui foto profil');
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diperbarui',
+                'image_url' => asset('storage/' . $path)
             ]);
-            
-            if ($request->ajax()) {
-                return response()->json(['error' => 'Gagal mengupload foto: ' . $e->getMessage()], 500);
-            }
-            
-            return redirect()->back()->with('error', 'Gagal mengupload foto: ' . $e->getMessage());
+
+        } catch (\Exception $e) {
+            return response()->json(['success' => false, 'error' => 'Gagal mengupload foto: ' . $e->getMessage()], 500);
         }
     }
 
@@ -193,7 +165,7 @@ class ProfileController extends Controller
             return redirect()->back()->with('success', 'Foto profil berhasil dihapus');
             
         } catch (\Exception $e) {
-            \Log::error('Delete foto profil gagal', [
+            Log::error('Delete foto profil gagal', [
                 'user_id' => Auth::id(),
                 'error' => $e->getMessage()
             ]);
