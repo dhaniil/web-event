@@ -10,6 +10,7 @@ use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 
 class Event extends Model
@@ -49,6 +50,7 @@ class Event extends Model
 
     protected $fillable = [
         'name',
+        'slug',
         'start_date',
         'jam_mulai',
         'end_date',
@@ -154,6 +156,30 @@ class Event extends Model
         
         // Jika banner tidak ada, gunakan image sebagai fallback
         return $this->getImageUrlAttribute();
+    }
+
+    // Tambahkan metode getRouteKeyName() untuk menggunakan slug
+    public function getRouteKeyName()
+    {
+        return 'slug';
+    }
+
+    // Ubah boot method untuk membuat slug yang lebih SEO friendly
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($event) {
+            if (!$event->slug) {
+                $event->slug = Str::slug($event->name);
+            }
+        });
+
+        static::updating(function ($event) {
+            if ($event->isDirty('name') && !$event->isDirty('slug')) {
+                $event->slug = Str::slug($event->name);
+            }
+        });
     }
 
 }

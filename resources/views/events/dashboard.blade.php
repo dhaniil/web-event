@@ -1164,7 +1164,7 @@
                                     <div class="event-grid">
                                         @forelse($events as $event)
                                             <div class="event-card">
-                                                <a href="{{ route('events.show', $event->id) }}" class="event-link">
+                                                <a href="{{ route('events.show', $event->slug) }}" class="event-link">
                                                     <div class="event-content">
                                                         <div class="event-image-container">
                                                             <img src="{{ asset('storage/' . $event->image) }}" alt="{{ $event->name }}" class="event-image">

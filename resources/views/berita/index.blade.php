@@ -2,51 +2,173 @@
 
 @section('styles')
     <link rel="stylesheet" href="{{ asset('css/eventonly.css') }}" />
+    <style>
+        /* Perbaikan layout halaman berita */
+        .berita-container {
+            min-height: calc(100vh - 180px);
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+        
+        .page-title {
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .page-title h1 {
+            font-size: 1.8rem;
+            color: #333;
+        }
+        
+        .berita-item {
+            margin-bottom: 30px;
+            border-radius: 10px;
+            overflow: hidden;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            background-color: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .berita-item:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+        
+        .berita-image {
+            height: 220px;
+            overflow: hidden;
+        }
+        
+        .berita-image img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        
+        .berita-item:hover .berita-image img {
+            transform: scale(1.05);
+        }
+        
+        .berita-content {
+            padding: 20px;
+        }
+        
+        .berita-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+        
+        .berita-meta {
+            display: flex;
+            align-items: center;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 15px;
+        }
+        
+        .berita-date {
+            margin-right: 15px;
+        }
+        
+        .berita-excerpt {
+            color: #555;
+            margin-bottom: 15px;
+        }
+        
+        .berita-link {
+            display: inline-block;
+            padding: 8px 20px;
+            background-color: #4F46E5;
+            color: white;
+            border-radius: 5px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+        
+        .berita-link:hover {
+            background-color: #3c35b5;
+            color: white;
+        }
+        
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 300px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            padding: 30px;
+            text-align: center;
+        }
+    </style>
 @endsection
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 @section('content')
-<section class="event">
-    <div class="main-content mt-16">
-        <!-- Filter container div has been removed -->
-        <div class="card-container">
-            <div class="row">
-                @if($beritas->isEmpty())
-                <div class="empty-state text-center py-5">
-                    <div class="empty-state-icon mb-4">
-                        <i class="far fa-newspaper" style="font-size: 4rem; color: #0d6efd;"></i>
-                    </div>
-                    <h3 class="empty-state-title mb-2">Tidak Ada Berita</h3>
-                    <p class="empty-state-description mb-4 text-muted">
-                        Belum ada berita yang tersedia untuk kategori dan filter yang dipilih.
-                        Coba ubah filter atau kembali lagi nanti.
-                    </p>
-                </div>
-                @else
-                    @foreach($beritas as $berita)
-                    <div class="col-lg-3 col-md-4 col-sm-6 col-12">
-                        <div class="card">
-                            <img src="{{ asset('storage/' . $berita->image) }}" class="card-img-top" alt="BeritaImage">
-                            <div class="card-body">
-                                <div class="desc">
-                                    <h5 class="card-title">{{ $berita->title }}</h5>
-                                    <p class="card-text">{{ $berita->excerpt ?? \Illuminate\Support\Str::limit($berita->content, 55, '...') }}</p>
-                                    <span class="text-muted">{{ $berita->published_at->format('d M Y') }}</span>
-                                </div>
-                                <div class="view-btn">
-                                    <a href="{{ route('berita.show', $berita->id) }}" class="btn">View Details</a>
-                                </div>
+<div class="content-area">
+    <div class="berita-container">
+        <div class="page-title">
+            <h1>Berita Event Terbaru</h1>
+        </div>
+        
+        <div class="row">
+            @if(count($beritas) > 0)
+                @foreach($beritas as $berita)
+                <div class="col-lg-4 col-md-6 col-12">
+                    <div class="berita-item">
+                        <div class="berita-image">
+                            <img src="{{ $berita->image_url }}" 
+                                 alt="{{ $berita->judul ?? $berita->title }}" 
+                                 class="img-fluid">
+                        </div>
+                        <div class="berita-content">
+                            <h2 class="berita-title">{{ $berita->judul }}</h2>
+                            <div class="berita-meta">
+                                <span class="berita-date"><i class="far fa-calendar-alt me-1"></i> {{ $berita->created_at->format('d M Y') }}</span>
+                                <span class="berita-author"><i class="far fa-user me-1"></i> 
+                                    {{ $berita->user?->name ?? 'Admin' }}
+                                </span>
                             </div>
+                            <div class="berita-excerpt">
+                                {{ Str::limit($berita->konten, 120) }}
+                            </div>
+                            <a href="{{ route('berita.show', $berita->id) }}" class="berita-link">Baca Selengkapnya</a>
                         </div>
                     </div>
-                    @endforeach
+                </div>
+                @if(config('app.debug'))
+                    <div style="font-size: 10px; color: #999;">
+                        Debug: 
+                        image = {{ $berita->image ?? 'NULL' }}, 
+                        gambar = {{ $berita->gambar ?? 'NULL' }}, 
+                        Accessor = {{ $berita->image_url }}
+                    </div>
                 @endif
-            </div>
+                @endforeach
+            @else
+                <div class="col-12">
+                    <div class="empty-state">
+                        <div class="empty-state-icon">
+                            <i class="far fa-newspaper" style="font-size: 4rem; color: #ccc;"></i>
+                        </div>
+                        <h3 class="empty-state-title">Belum Ada Berita</h3>
+                        <p class="empty-state-description">Berita terbaru akan muncul di sini ketika tersedia</p>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
-</section>
+</div>
 @endsection
 
 <script>

@@ -14,10 +14,10 @@ use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
-    public function editProfile()
+    public function edit(Request $request)
     {
         return view('profile.edit', [
-            'user' => Auth::user()
+            'user' => $request->user(),
         ]);
     }
 
@@ -218,5 +218,10 @@ class ProfileController extends Controller
         DB::table('users')->where('id', $user->id)->delete();
 
         return redirect('/');
+    }
+
+    public function editProfile(Request $request)
+    {
+        return $this->edit($request);
     }
 }

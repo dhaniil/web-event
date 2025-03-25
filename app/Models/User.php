@@ -94,7 +94,19 @@ class User extends Authenticatable implements FilamentUser
         return $this->hasMany(Review::class);
     }
 
+    /**
+     * Event yang difavoritkan oleh user
+     */
     public function favourites()
+    {
+        return $this->belongsToMany(Event::class, 'favourites', 'user_id', 'events_id');
+    }
+    
+    /**
+     * Sama dengan favourites(), hanya nama metode yang berbeda
+     * untuk kejelasan semantik
+     */
+    public function favouriteEvents()
     {
         return $this->belongsToMany(Event::class, 'favourites', 'user_id', 'events_id');
     }

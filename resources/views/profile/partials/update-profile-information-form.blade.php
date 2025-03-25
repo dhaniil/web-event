@@ -47,6 +47,35 @@
             @endif
         </div>
 
+        <!-- Kolom Jurusan -->
+        <div class="mb-3">
+            <label for="jurusan" class="form-label">Jurusan</label>
+            <select id="jurusan" name="jurusan" class="form-select">
+                <option value="">Pilih Jurusan</option>
+                <option value="SIJA A" {{ Auth::user()->jurusan == 'SIJA A' ? 'selected' : '' }}>SIJA A</option>
+                <option value="SIJA B" {{ Auth::user()->jurusan == 'SIJA B' ? 'selected' : '' }}>SIJA B</option>
+                <option value="TFLM A" {{ Auth::user()->jurusan == 'TFLM A' ? 'selected' : '' }}>TFLM A</option>
+                <option value="TFLM B" {{ Auth::user()->jurusan == 'TFLM B' ? 'selected' : '' }}>TFLM B</option>
+                <option value="KA A" {{ Auth::user()->jurusan == 'KA A' ? 'selected' : '' }}>KA A</option>
+                <option value="KA B" {{ Auth::user()->jurusan == 'KA B' ? 'selected' : '' }}>KA B</option>
+                <option value="GP A" {{ Auth::user()->jurusan == 'GP A' ? 'selected' : '' }}>GP A</option>
+                <option value="GP B" {{ Auth::user()->jurusan == 'GP B' ? 'selected' : '' }}>GP B</option>
+                <option value="DPIB A" {{ Auth::user()->jurusan == 'DPIB A' ? 'selected' : '' }}>DPIB A</option>
+                <option value="DPIB B" {{ Auth::user()->jurusan == 'DPIB B' ? 'selected' : '' }}>DPIB B</option>
+                <option value="TKR A" {{ Auth::user()->jurusan == 'TKR A' ? 'selected' : '' }}>TKR A</option>
+                <option value="TKR B" {{ Auth::user()->jurusan == 'TKR B' ? 'selected' : '' }}>TKR B</option>
+                <option value="TOI A" {{ Auth::user()->jurusan == 'TOI A' ? 'selected' : '' }}>TOI A</option>
+                <option value="TOI B" {{ Auth::user()->jurusan == 'TOI B' ? 'selected' : '' }}>TOI B</option>
+                <option value="TEK A" {{ Auth::user()->jurusan == 'TEK A' ? 'selected' : '' }}>TEK A</option>
+                <option value="TEK B" {{ Auth::user()->jurusan == 'TEK B' ? 'selected' : '' }}>TEK B</option>
+                <option value="TKI A" {{ Auth::user()->jurusan == 'TKI A' ? 'selected' : '' }}>TKI A</option>
+                <option value="TKI B" {{ Auth::user()->jurusan == 'TKI B' ? 'selected' : '' }}>TKI B</option>
+                <option value="TP" {{ Auth::user()->jurusan == 'TP' ? 'selected' : '' }}>TP</option>
+                <option value="TBKR" {{ Auth::user()->jurusan == 'TBKR' ? 'selected' : '' }}>TBKR</option>
+                <option value="TITL" {{ Auth::user()->jurusan == 'TITL' ? 'selected' : '' }}>TITL</option>
+            </select>
+        </div>
+
         <div class="flex items-center gap-4">
             <x-primary-button>{{ __('Save') }}</x-primary-button>
 

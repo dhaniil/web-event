@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Facades\Storage;
 
 class Berita extends Model
 {
@@ -29,14 +30,21 @@ class Berita extends Model
 
     protected $fillable = [
         'title',
+        'judul',
         'slug',
         'excerpt',
+        'ringkasan',
         'content',
+        'konten',
         'image',
+        'gambar',
         'category',
+        'kategori',
         'published_at',
+        'tanggal_terbit',
         'status',
         'author_id',
+        'user_id',
         'views'
     ];
 
@@ -68,5 +76,30 @@ class Berita extends Model
     public function incrementViews()
     {
         $this->increment('views');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
+    public function getImageUrlAttribute()
+    {
+        // Cek field image dan gambar
+        $imageField = $this->image ?? $this->gambar ?? null;
+        
+        if (!$imageField) {
+            return asset('images/placeholder.jpg'); // Gambar placeholder default
+        }
+        
+        // Cek apakah gambar adalah URL lengkap
+        if (filter_var($imageField, FILTER_VALIDATE_URL)) {
+            return $imageField;
+        }
+        
+        // Cek apakah file exists dan return URL yang benar
+        return Storage::disk('public')->exists($imageField)
+            ? asset('storage/' . $imageField)
+            : asset('images/placeholder.jpg');
     }
 }

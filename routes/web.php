@@ -26,7 +26,7 @@ Route::get('/home', [EventController::class, 'index'])->name('events.dashboard')
 
 // Profile
 Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'editProfile'])->name('profile.edit');
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/profile/update', [ProfileController::class, 'updateProfile'])->name('profile.update.profile');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::post('/profile/update-password', [ProfileController::class, 'updatePassword'])->name('profile.update.password');
@@ -46,13 +46,12 @@ Route::get('/debug/banners', [App\Http\Controllers\EventBannerController::class,
     ->middleware('auth'); // Protect with auth to prevent public access
 
 // Event 
-Route::get('/events/{event}', [EventController::class, 'show'])
-    ->name('events.show')
-    ->middleware(TrackPengunjung::class);
+Route::get('/events/{event}', [EventController::class, 'show'])->name('events.show');
 Route::post('/events', [EventController::class, 'store'])->name('events.store');
 Route::get('/event/only', [EventController::class, 'EventPage'])->name('events.eventonly');
-Route::get('/events/{id}/edit', [EventController::class, 'edit'])->name('events.edit');
-Route::put('/events/{id}', [EventController::class, 'update'])->name('events.update');
+Route::get('/events/{event}/edit', [EventController::class, 'edit'])->name('events.edit');
+Route::put('/events/{event}', [EventController::class, 'update'])->name('events.update');
+Route::get('/events', [EventController::class, 'listEvents'])->name('events.index');
 
 // Favourite
 Route::middleware('auth')->group(function () {
@@ -64,7 +63,7 @@ Route::middleware('auth')->group(function () {
     
     // Halaman daftar favorit
     Route::get('/favourites', [FavouriteController::class, 'favouriteEvents'])
-        ->name('favourites');
+        ->name('favourites.index');
 });
 
 // Berita

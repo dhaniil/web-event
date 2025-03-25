@@ -1,96 +1,260 @@
-@extends('layouts.app')
+@extends('extend.main')
+
+@section('styles')
+<style>
+    /* Styling untuk halaman hasil pencarian */
+    .search-header {
+        background-color: #f8f9fa;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid #eee;
+    }
+    
+    .search-title {
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .search-query {
+        color: #3c5cff;
+        font-weight: 500;
+    }
+    
+    .search-indicator {
+        width: 50px;
+        height: 4px;
+        background-color: #3c5cff;
+        margin: 1rem auto;
+    }
+    
+    .search-form-container {
+        max-width: 600px;
+        margin: 0 auto 2rem;
+    }
+    
+    .search-form input {
+        border-radius: 8px 0 0 8px;
+        height: 46px;
+        border: 1px solid #ddd;
+    }
+    
+    .search-form button {
+        border-radius: 0 8px 8px 0;
+        background-color: #3c5cff;
+        color: white;
+        border: none;
+        height: 46px;
+    }
+    
+    .section-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        padding-left: 15px;
+        border-left: 4px solid #3c5cff;
+    }
+    
+    .result-card {
+        background: white;
+        border-radius: 10px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .result-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    }
+    
+    .card-image {
+        height: 180px;
+        overflow: hidden;
+        position: relative;
+    }
+    
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.5s;
+    }
+    
+    .result-card:hover .card-image img {
+        transform: scale(1.05);
+    }
+    
+    .card-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 0.7rem;
+        padding: 0.25rem 0.75rem;
+        border-radius: 50px;
+    }
+    
+    .event-badge {
+        background-color: #3c5cff;
+        color: white;
+    }
+    
+    .news-badge {
+        background-color: #6c757d;
+        color: white;
+    }
+    
+    .card-content {
+        padding: 1.25rem;
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .card-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        color: #333;
+    }
+    
+    .card-text {
+        color: #6c757d;
+        margin-bottom: 1rem;
+        flex-grow: 1;
+    }
+    
+    .card-link {
+        color: #3c5cff;
+        font-weight: 500;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+    
+    .card-link:hover {
+        text-decoration: underline;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        background-color: white;
+        border-radius: 10px;
+        box-shadow: 0 3px 15px rgba(0,0,0,0.05);
+    }
+    
+    .empty-icon {
+        font-size: 3rem;
+        color: #d1d5db;
+        margin-bottom: 1rem;
+    }
+    
+    .pagination-container {
+        margin-top: 2rem;
+        display: flex;
+        justify-content: center;
+    }
+</style>
+@endsection
 
 @section('content')
-<div class="min-h-screen bg-[#f8f9fa] pt-20 w-full">
-    <div class="container px-4 py-8 max-w-7xl mx-auto">
-        <!-- Search Header -->
-        <div class="mb-12 text-center">
-            <h1 class="text-4xl font-bold text-gray-800 mb-3 font-montserrat">Hasil Pencarian</h1>
-            <p class="text-lg text-gray-600 font-medium">"{{ $query }}"</p>
-            <div class="w-20 h-1 bg-[#3c5cff] mx-auto mt-4"></div>
+<div class="search-header text-center">
+    <div class="container">
+        <h1 class="search-title">Hasil Pencarian</h1>
+        <p class="lead">untuk kata kunci <span class="search-query">"{{ $query }}"</span></p>
+        <div class="search-indicator"></div>
+        
+        <div class="search-form-container">
+            <form action="{{ route('search') }}" method="GET" class="search-form">
+                <div class="input-group">
+                    <input type="text" name="query" class="form-control" value="{{ $query }}" placeholder="Cari event atau berita...">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i> Cari
+                    </button>
+                </div>
+            </form>
         </div>
-
-        @if($events->isEmpty() && $berita->isEmpty())
-            <div class="flex flex-col items-center justify-center py-16 px-4">
-                <div class="bg-white p-8 rounded-xl shadow-lg text-center max-w-md w-full">
-                    <i class="fas fa-search text-4xl text-gray-400 mb-4"></i>
-                    <p class="text-xl text-gray-600 mb-2">Tidak ada hasil ditemukan</p>
-                    <p class="text-gray-500">Coba kata kunci lain atau periksa ejaan</p>
-                </div>
-            </div>
-        @else
-            @if(!$events->isEmpty())
-                <div class="mb-12">
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-l-4 border-[#3c5cff] pl-3 font-montserrat">Event Terkait</h2>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($events as $event)
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-                            <img src="{{ $event->image_url }}" alt="{{ $event->name }}" class="w-full h-48 object-cover">
-                            <div class="p-5">
-                                <div class="flex items-center gap-2 mb-3">
-                                    <span class="bg-blue-100 text-[#3c5cff] text-xs px-2.5 py-1 rounded-full">{{ $event->type }}</span>
-                                    <span class="bg-purple-100 text-purple-600 text-xs px-2.5 py-1 rounded-full">{{ $event->kategori }}</span>
-                                </div>
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $event->name }}</h3>
-                                <p class="text-gray-600 mb-4 text-sm">{{ Str::limit($event->description, 100) }}</p>
-                                <div class="flex items-center justify-between">
-                                    <a href="{{ route('events.show', $event->id) }}" class="text-[#3c5cff] font-semibold hover:text-[#1a40ff] transition-colors">
-                                        Lihat Detail →
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            @if(!$berita->isEmpty())
-                <div>
-                    <div class="flex items-center justify-between mb-6">
-                        <h2 class="text-2xl font-bold text-gray-800 border-l-4 border-[#3c5cff] pl-3 font-montserrat">Berita Terkait</h2>
-                    </div>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        @foreach($berita as $item)
-                        <div class="bg-white rounded-xl shadow-sm overflow-hidden hover:shadow-md transition-shadow duration-300">
-                            @if($item->image)
-                                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}" class="w-full h-48 object-cover">
-                            @endif
-                            <div class="p-5">
-                                @if($item->category)
-                                    <div class="mb-3">
-                                        <span class="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-full">{{ $item->category }}</span>
-                                    </div>
-                                @endif
-                                <h3 class="text-xl font-bold text-gray-800 mb-2">{{ $item->title }}</h3>
-                                <p class="text-gray-600 mb-4 text-sm">{{ Str::limit($item->excerpt, 100) }}</p>
-                                <div class="flex items-center justify-between">
-                                    <a href="{{ route('berita.show', $item->slug) }}" class="text-[#3c5cff] font-semibold hover:text-[#1a40ff] transition-colors">
-                                        Baca Selengkapnya →
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                        @endforeach
-                    </div>
-                </div>
-            @endif
-
-            @if($events->hasPages() || $berita->hasPages())
-                <div class="mt-8">
-                    <div class="flex justify-center space-x-4">
-                        @if($events->hasPages())
-                            {{ $events->links() }}
-                        @endif
-                        @if($berita->hasPages())
-                            {{ $berita->links() }}
-                        @endif
-                    </div>
-                </div>
-            @endif
-        @endif
     </div>
+</div>
+
+<div class="container py-4">
+    @if($events->isEmpty() && $berita->isEmpty())
+        <div class="empty-state">
+            <i class="fas fa-search empty-icon"></i>
+            <h3 class="mb-3">Tidak Ada Hasil Ditemukan</h3>
+            <p class="text-muted mb-4">Coba gunakan kata kunci yang berbeda atau periksa ejaan</p>
+            <div class="d-flex justify-content-center gap-3">
+                <a href="{{ route('events.eventonly') }}" class="btn btn-outline-primary">Lihat Semua Event</a>
+                <a href="{{ route('berita.index') }}" class="btn btn-outline-secondary">Lihat Semua Berita</a>
+            </div>
+        </div>
+    @else
+        @if(!$events->isEmpty())
+            <div class="mb-5">
+                <h2 class="section-title">Event Terkait</h2>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach($events as $event)
+                    <div class="col">
+                        <div class="result-card">
+                            <div class="card-image">
+                                <img src="{{ $event->image_url ?? asset('storage/' . $event->image) }}" alt="{{ $event->name }}">
+                                <span class="card-badge event-badge">{{ $event->kategori ?? 'Event' }}</span>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title">{{ $event->name }}</h3>
+                                <p class="card-text">{{ \Illuminate\Support\Str::limit(strip_tags($event->description), 100) }}</p>
+                                <a href="{{ route('events.show', $event->slug) }}" class="card-link">
+                                    Lihat Detail <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                
+                @if($events->hasPages())
+                    <div class="pagination-container">
+                        {{ $events->links() }}
+                    </div>
+                @endif
+            </div>
+        @endif
+        
+        @if(!$berita->isEmpty())
+            <div class="mb-5">
+                <h2 class="section-title">Berita Terkait</h2>
+                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                    @foreach($berita as $item)
+                    <div class="col">
+                        <div class="result-card">
+                            <div class="card-image">
+                                <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}">
+                                <span class="card-badge news-badge">Berita</span>
+                            </div>
+                            <div class="card-content">
+                                <h3 class="card-title">{{ $item->title }}</h3>
+                                <p class="card-text">{{ \Illuminate\Support\Str::limit(strip_tags($item->excerpt), 100) }}</p>
+                                <a href="{{ route('berita.show', $item->slug) }}" class="card-link">
+                                    Baca Selengkapnya <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                
+                @if($berita->hasPages())
+                    <div class="pagination-container">
+                        {{ $berita->links() }}
+                    </div>
+                @endif
+            </div>
+        @endif
+    @endif
 </div>
 @endsection

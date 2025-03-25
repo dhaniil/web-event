@@ -1,10 +1,34 @@
+<style>
+    .footer-container a {
+        text-decoration: none;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .footer-container a:hover {
+        transform: translateX(5px);
+    }
+    
+    .footer-container a:hover::after {
+        content: '';
+        position: absolute;
+        left: 0;
+        bottom: -3px;
+        width: 100%;
+        height: 1px;
+        background-image: linear-gradient(to right, #ffffff 50%, transparent 50%);
+        background-size: 10px 1px;
+        background-repeat: repeat-x;
+    }
+</style>
+
 <footer class="bg-gradient-to-br from-[#5356ff] to-[#3730a3] relative overflow-hidden py-16 text-white">
     <!-- Decorative circles -->
     <div class="absolute w-[500px] h-[500px] bg-white/15 rounded-full -top-48 -right-24 blur-[80px]"></div>
     <div class="absolute w-[400px] h-[400px] bg-white/15 rounded-full -bottom-36 -left-24 blur-[70px]"></div>
 
     <div class="container mx-auto px-4 relative z-10">
-        <div class="flex flex-wrap justify-between gap-8">
+        <div class="footer-container flex flex-wrap justify-between gap-8">
             <!-- About Section -->
             <div class="flex-1 min-w-[250px]">
                 <h5 class="text-lg font-semibold mb-4">Tentang Stembayo Events</h5>

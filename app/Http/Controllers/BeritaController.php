@@ -10,7 +10,8 @@ class BeritaController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Berita::where('status', 'published')
+        $query = Berita::with('user')
+            ->where('status', 'published')
             ->when($request->has('tanggal'), function ($q) use ($request) {
                 return $q->whereDate('published_at', $request->tanggal);
             })
@@ -26,6 +27,14 @@ class BeritaController extends Controller
     {
         if ($berita->status !== 'published') {
             abort(404);
+        }
+
+        if (!$berita->relationLoaded('user')) {
+            $berita->load('user');
+        }
+        
+        if ($berita->author_id && !$berita->user_id) {
+            $berita->load('author');
         }
 
         $berita->incrementViews();

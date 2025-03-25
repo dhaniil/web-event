@@ -4,76 +4,279 @@
     <link rel="stylesheet" href="/css/event-show.css">
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        /* Perbaikan untuk header event agar tidak tertutup navbar */
+        .content-area {
+            padding-top: 20px;
+            margin-top: 0;
+        }
+        
+        .event-container {
+            margin-top: 0;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .event-header {
+            position: relative;
+            height: 400px;
+            width: 100%;
+            overflow: hidden;
+            border-radius: 10px 10px 0 0;
+        }
+        
+        .event-image-wrapper {
+            height: 100%;
+            width: 100%;
+        }
+        
+        .event-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .event-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+        }
+        
+        .event-title-section {
+            position: absolute;
+            bottom: 30px;
+            left: 30px;
+            color: white;
+            z-index: 5;
+        }
+        
+        /* Style untuk tombol favorit */
+        .favorite-btn {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            font-size: 1.8rem;
+            transition: all 0.3s ease;
+            padding: 8px;
+            color: white;
+            z-index: 10;
+        }
+        
+        .favorite-btn:hover {
+            transform: scale(1.3);
+        }
+        
+        .favorite-btn .far.fa-heart {
+            color: white;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+        
+        .favorite-btn .fas.fa-heart {
+            color: #ff3b5c;
+            text-shadow: 0 0 3px rgba(0,0,0,0.5);
+        }
+        
+        /* Untuk event tanpa banner */
+        .event-title-section-plain {
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            margin-bottom: 0;
+        }
+        
+        /* Konten event */
+        .event-content {
+            padding: 30px;
+        }
+        
+        .event-details {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .detail-card {
+            flex: 1;
+            min-width: 200px;
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+        }
+        
+        .icon-wrapper {
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #eaeeff;
+            border-radius: 50%;
+            margin-right: 15px;
+            color: #3c5cff;
+        }
+        
+        .detail-info h3 {
+            margin: 0;
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .detail-info p {
+            margin: 5px 0 0;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .event-description {
+            margin-top: 30px;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-radius: 10px;
+        }
+        
+        .event-description h2 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+        
+        /* Animasi untuk ikon hati saat di-klik */
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.3); }
+            50% { transform: scale(1); }
+            75% { transform: scale(1.3); }
+            100% { transform: scale(1); }
+        }
+        
+        .heart-beat {
+            animation: heartbeat 1s ease-in-out;
+        }
+        
+        /* Responsive fixes */
+        @media (max-width: 768px) {
+            .event-header {
+                height: 300px;
+            }
+            
+            .event-title-section {
+                left: 15px;
+                bottom: 15px;
+            }
+            
+            .event-title-section h1 {
+                font-size: 1.5rem;
+            }
+            
+            .event-content {
+                padding: 20px 15px;
+            }
+            
+            .event-details {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .detail-card {
+                min-width: 100%;
+            }
+        }
+        
+        /* Style untuk notifikasi */
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: white;
+            color: #333;
+            border-left: 4px solid #4CAF50;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            border-radius: 4px;
+            z-index: 9999;
+            opacity: 0;
+            transform: translateY(30px);
+            transition: all 0.3s ease;
+        }
+        
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .toast-success {
+            border-left-color: #4CAF50;
+        }
+        
+        .toast-error {
+            border-left-color: #F44336;
+        }
+        
+        .toast-info {
+            border-left-color: #2196F3;
+        }
+    </style>
 @endsection
 
 @section('content')
 <div class="content-area">
-    <div class="event-container">
-        <div class="event-header">
-            @if($event->banner)
-                <div class="event-image-wrapper">
-                    <img src="{{ $event->banner_url }}" alt="{{ $event->name }}" class="event-image">
-                    <div class="event-overlay"></div>
-                    
-                    <div class="event-title-section">
+    <div class="container">
+        <div class="event-container">
+            <!-- Banner dan judul -->
+            <div class="event-header">
+                @if($event->banner || $event->image)
+                    <div class="event-image-wrapper">
+                        <img src="{{ $event->banner ? $event->banner_url : $event->image_url }}" alt="{{ $event->name }}" class="event-image">
+                        <div class="event-overlay"></div>
+                        
+                        <div class="event-title-section">
+                            <h1>{{ $event->name }}</h1>
+                            <div class="event-meta">
+                                <span class="event-category">{{ $event->kategori }}</span>
+                                <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
+                                @auth
+                                    <div class="favourite-container">
+                                        <button type="button" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}" data-event-id="{{ $event->id }}">
+                                            <i class="{{ $event->favouritedBy->contains(auth()->id()) ? 'fas' : 'far' }} fa-heart"></i>
+                                        </button>
+                                    </div>
+                                @endauth
+                            </div>
+                        </div>
+                    </div>
+                @else
+                    <div class="event-title-section-plain">
                         <h1>{{ $event->name }}</h1>
                         <div class="event-meta">
                             <span class="event-category">{{ $event->kategori }}</span>
                             <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
-                            @auth
-                                <div id="favoriteContainer" class="favourite-container">
-                                    <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form" id="favouriteForm">
-                                        @csrf
-                                        <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
-                                            <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            @endauth
                         </div>
                     </div>
-                </div>
-            @elseif($event->image)
-                <div class="event-image-wrapper">
-                    <img src="{{ $event->image_url }}" alt="{{ $event->name }}" class="event-image">
-                    <div class="event-overlay"></div>
-            
-            <div class="event-title-section">
-                <h1>{{ $event->name }}</h1>
-                <div class="event-meta">
-                    <span class="event-category">{{ $event->kategori }}</span>
-                            <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
-                    @auth
-                                <div id="favoriteContainer" class="favourite-container">
-                                    <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form" id="favouriteForm">
-                                        @csrf
-                                        <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
-                                            <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                    @endauth
-                </div>
+                @endif
             </div>
-        </div>
-            @else
-                <div class="event-title-section" style="position: relative; color: #333; margin-bottom: 20px;">
-                    <h1>{{ $event->name }}</h1>
-                    <div class="event-meta" style="margin-bottom: 10px;">
-                        <span class="event-category">{{ $event->kategori }}</span>
-                        <span class="event-status {{ strtolower($event->status) }}">{{ ucfirst($event->status) }}</span>
-                    </div>
-                </div>
-            @endif
-            
-            <div class="event-content">
-            <div class="event-details">
-                <div class="detail-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-calendar-alt"></i>
-                    </div>
-                    <div class="detail-info">
-                        <h3>Tanggal</h3>
+
+            <!-- Konten detail event - Pastikan area ini terlihat -->
+            <div class="event-content" style="display:block; visibility:visible; opacity:1;">
+                <!-- Informasi dasar event -->
+                <div class="event-details">
+                    <div class="detail-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                        <div class="detail-info">
+                            <h3>Tanggal</h3>
                             <p>{{ \Carbon\Carbon::parse($event->tanggal_mulai)->isoFormat('D MMMM Y') }}</p>
                             @if($event->tanggal_selesai && $event->tanggal_selesai != $event->tanggal_mulai)
                                 <p>- {{ \Carbon\Carbon::parse($event->tanggal_selesai)->isoFormat('D MMMM Y') }}</p>
@@ -88,41 +291,43 @@
                         <div class="detail-info">
                             <h3>Waktu</h3>
                             <p class="time">{{ \Carbon\Carbon::parse($event->waktu_mulai)->format('H:i') }} - {{ \Carbon\Carbon::parse($event->waktu_selesai)->format('H:i') }} WIB</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="detail-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-map-marker-alt"></i>
-                    </div>
-                    <div class="detail-info">
-                        <h3>Lokasi</h3>
+                    <div class="detail-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-map-marker-alt"></i>
+                        </div>
+                        <div class="detail-info">
+                            <h3>Lokasi</h3>
                             <p>{{ $event->lokasi ?? 'Tidak disebutkan' }}</p>
+                        </div>
                     </div>
-                </div>
 
-                <div class="detail-card">
-                    <div class="icon-wrapper">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="detail-info">
-                        <h3>Penyelenggara</h3>
+                    <div class="detail-card">
+                        <div class="icon-wrapper">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="detail-info">
+                            <h3>Penyelenggara</h3>
                             <p>{{ $event->penyelenggara ?? 'Tidak disebutkan' }}</p>
+                        </div>
                     </div>
                 </div>
-            </div>
 
+                <!-- Deskripsi event -->
                 <div class="event-description">
-                <h2>Tentang Event</h2>
+                    <h2>Tentang Event</h2>
                     <div>
                         {!! nl2br(e($event->description)) !!}
                     </div>
-            </div>
+                </div>
 
+                <!-- Bagian ulasan -->
                 <div class="ulasan-section">
                     <div class="ulasan-header">
                         <h2>Ulasan ({{ $event->ulasan()->count() }})</h2>
-                @auth
+                    @auth
                             <button class="tambah-ulasan-btn" onclick="toggleUlasanForm()">
                             <i class="fas fa-plus"></i> Tambah Ulasan
                         </button>
@@ -177,106 +382,92 @@
 @section('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        console.log('Kode JavaScript dieksekusi');
-        // Cari form dengan ID yang pasti
-        const favoriteForm = document.getElementById('favouriteForm');
-
-        if (favoriteForm) {
-            // Inisialisasi tampilan tombol saat halaman dimuat
-            const btn = favoriteForm.querySelector('.favorite-btn');
-            const icon = btn.querySelector('i');
-            if (btn.classList.contains('active')) {
-                icon.className = 'fas fa-heart';
-            } else {
-                icon.className = 'far fa-heart';
-            }
-
-            // Tambahkan event listener ke form
-            favoriteForm.addEventListener('submit', function(e) {
-                e.preventDefault();
-                console.log('Tombol favorit diklik');
-
-                // Ambil elemen button dan icon
-                const btn = this.querySelector('.favorite-btn');
-                const icon = btn.querySelector('i');
-                const originalIcon = icon.className;
+        // Temukan semua tombol favorit
+        const buttons = document.querySelectorAll('.favorite-btn');
+        console.log('Tombol favorit ditemukan:', buttons.length);
+        
+        // Tambahkan event listener ke setiap tombol
+        buttons.forEach(button => {
+            button.addEventListener('click', function() {
+                // Ambil ID event dari atribut data
+                const eventId = this.getAttribute('data-event-id');
                 
-                // Tampilkan loading
+                // Ambil ikon
+                const icon = this.querySelector('i');
+                if (!icon) return;
+                
+                // Tampilkan animasi loading
                 icon.className = 'fas fa-spinner fa-spin';
                 
-                // Kirim request dengan metode lebih sederhana
-                fetch(this.action, {
+                // Kirim request ke server
+                fetch('/favourite/' + eventId, {
                     method: 'POST',
                     headers: {
-                        'X-Requested-With': 'XMLHttpRequest'
-                    },
-                    body: new FormData(this)
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
                 })
-                .then(response => {
-                    console.log('Response diterima', response);
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log('Data dari response', data);
+                    console.log('Data response:', data);
+                    
                     if (data.success) {
-                        // Update tampilan berdasarkan status favorit
+                        // Update tampilan ikon dan tambahkan animasi
                         if (data.favourited) {
-                            console.log('Event difavoritkan');
-                            btn.classList.add('active');
+                            // Favorit aktif
                             icon.className = 'fas fa-heart';
+                            this.classList.add('active');
+                            
+                            // Tambahkan animasi heartbeat
+                            icon.classList.add('heart-beat');
+                            setTimeout(() => {
+                                icon.classList.remove('heart-beat');
+                            }, 1000);
                         } else {
-                            console.log('Event tidak difavoritkan');
-                            btn.classList.remove('active');
+                            // Favorit tidak aktif
                             icon.className = 'far fa-heart';
+                            this.classList.remove('active');
                         }
-
-                        console.log('Tampilan diupdate');
-                        // Tampilkan pesan sukses
-                        showToast(data.message, 'success');
+                        
+                        // Tampilkan notifikasi sukses
+                        showNotification(data.message, 'success');
                     } else {
-                        console.log('Terjadi kesalahan', data.message);
-                        // Kembalikan ikon asli jika gagal
-                        icon.className = originalIcon;
-                        showToast(data.message || 'Terjadi kesalahan', 'error');
+                        // Error
+                        icon.className = this.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+                        showNotification(data.message || 'Terjadi kesalahan', 'error');
                     }
                 })
                 .catch(error => {
-                    console.error('Terjadi kesalahan:', error);
-                    // Kembalikan ikon asli jika terjadi error
-                    icon.className = originalIcon;
-                    showToast('Terjadi kesalahan. Silakan coba lagi.', 'error');
+                    console.error('Error:', error);
+                    icon.className = this.classList.contains('active') ? 'fas fa-heart' : 'far fa-heart';
+                    showNotification('Terjadi kesalahan', 'error');
                 });
             });
-        }
-        
-        // Deteksi session message
-        @if(session('success'))
-            showToast("{{ session('success') }}", 'success');
-        @endif
-        
-        @if(session('error'))
-            showToast("{{ session('error') }}", 'error');
-        @endif
+        });
     });
     
-    // Fungsi toast tetap sama
-    function showToast(message, type = 'info') {
-        const existingToast = document.querySelector('.toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
+    // Fungsi untuk menampilkan notifikasi
+    function showNotification(message, type = 'info') {
+        // Reset notifikasi sebelumnya
+        const existing = document.querySelector('.toast-notification');
+        if (existing) existing.remove();
         
-        const toast = document.createElement('div');
-        toast.className = `toast toast-${type}`;
-        toast.innerText = message;
+        // Buat elemen notifikasi
+        const notification = document.createElement('div');
+        notification.className = `toast-notification toast-${type}`;
+        notification.textContent = message;
         
-        document.body.appendChild(toast);
+        // Tambahkan ke DOM
+        document.body.appendChild(notification);
         
-        setTimeout(() => toast.classList.add('show'), 10);
+        // Animasi tampil
+        setTimeout(() => notification.classList.add('show'), 10);
         
+        // Hilangkan setelah beberapa detik
         setTimeout(() => {
-            toast.classList.remove('show');
-            setTimeout(() => toast.remove(), 300);
+            notification.classList.remove('show');
+            setTimeout(() => notification.remove(), 300);
         }, 3000);
     }
 </script>
@@ -524,25 +715,58 @@
     document.documentElement.classList.add('js-enabled');
 </script>
 
-<noscript>
-    <style>
-        /* Tampilkan formulir biasa jika JavaScript dinonaktifkan */
-        .js-enabled .favourite-form {
-            display: none;
-        }
+<script>
+    // Ini adalah script tambahan untuk memastikan navbar berada di atas
+    document.addEventListener('DOMContentLoaded', function() {
+        // Fix navbar dengan JavaScript untuk memastikan posisinya benar
+        const navbar = document.querySelector('.navbar');
+        navbar.style.position = 'fixed';
+        navbar.style.top = '0';
+        navbar.style.left = '0';
+        navbar.style.width = '100%';
+        navbar.style.zIndex = '1999';
         
-        .favourite-form-fallback {
-            display: block;
+        // Periksa apakah header event tertutup navbar
+        const eventHeader = document.querySelector('.event-header');
+        if (eventHeader) {
+            const navbarHeight = navbar.offsetHeight;
+            const currentPadding = parseInt(window.getComputedStyle(document.body).paddingTop);
+            
+            if (currentPadding < navbarHeight) {
+                document.body.style.paddingTop = navbarHeight + 'px';
+            }
+            
+            console.log('Navbar height:', navbarHeight);
+            console.log('Body padding top:', currentPadding);
         }
-    </style>
-    
-    <!-- Form fallback untuk browser tanpa JavaScript -->
-    @auth
-        <form action="{{ route('favourite.add', $event->id) }}" method="POST" class="favourite-form-fallback">
-            @csrf
-            <button type="submit" class="favorite-btn {{ $event->favouritedBy->contains(auth()->id()) ? 'active' : '' }}">
-                <i class="fa{{ $event->favouritedBy->contains(auth()->id()) ? 's' : 'r' }} fa-heart"></i>
-            </button>
-        </form>
-    @endauth
-</noscript>
+    });
+</script>
+
+<script>
+// Tambahkan script debugging
+console.log('Debug page struktur:');
+console.log('Event container:', document.querySelector('.event-container'));
+console.log('Event content:', document.querySelector('.event-content'));
+console.log('Event details:', document.querySelector('.event-details'));
+console.log('Detail cards:', document.querySelectorAll('.detail-card').length);
+
+// Force tampilkan konten
+document.addEventListener('DOMContentLoaded', function() {
+    // Force show content
+    setTimeout(function() {
+        const eventContent = document.querySelector('.event-content');
+        if (eventContent) {
+            console.log('Forcing event content visibility');
+            eventContent.style.display = 'block';
+            eventContent.style.visibility = 'visible';
+            eventContent.style.opacity = '1';
+            
+            // Jika masih bermasalah, coba tambahkan konten secara manual
+            if (document.querySelectorAll('.detail-card').length === 0) {
+                console.log('Re-creating event details manually');
+                // Kode untuk membuat ulang detail cards jika diperlukan
+            }
+        }
+    }, 500);
+});
+</script>

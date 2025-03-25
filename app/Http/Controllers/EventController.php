@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
+use Illuminate\Support\Str;
 
 class EventController extends Controller
 {
@@ -21,26 +22,33 @@ class EventController extends Controller
 
         $events = $query->orderBy('created_at', 'desc')->get();
         
-        // Get banners with logging to debug
-        $eventBannerController = new EventBannerController();
-        $banners = $eventBannerController->getActiveBanners();
+        // Cek route name yang digunakan
+        $routeName = $request->route()->getName();
         
-        // Log banner count and details for debugging
-        Log::info('EventBanner count: ' . $banners->count());
-        if ($banners->count() > 0) {
-            foreach ($banners as $index => $banner) {
-                Log::info("Banner #{$index}: ID={$banner->id}, Image={$banner->image}");
-                // Check if image file exists
-                if ($banner->image && file_exists(public_path('storage/' . $banner->image))) {
-                    Log::info("Banner image exists: storage/{$banner->image}");
-                } else {
-                    Log::warning("Banner image does not exist: {$banner->image}");
+        if ($routeName === 'events.dashboard') {
+            // Code untuk dashboard
+            $eventBannerController = new EventBannerController();
+            $banners = $eventBannerController->getActiveBanners();
+            
+            // Log banner count and details for debugging
+            Log::info('EventBanner count: ' . $banners->count());
+            if ($banners->count() > 0) {
+                foreach ($banners as $index => $banner) {
+                    Log::info("Banner #{$index}: ID={$banner->id}, Image={$banner->image}");
+                    if ($banner->image && file_exists(public_path('storage/' . $banner->image))) {
+                        Log::info("Banner image exists: storage/{$banner->image}");
+                    } else {
+                        Log::warning("Banner image does not exist: {$banner->image}");
+                    }
                 }
             }
+            
+            $user = Auth::user();
+            return view('events.dashboard', compact('events', 'user', 'banners'));
+        } else {
+            // Code untuk events.index
+            return view('events.index', compact('events'));
         }
-        
-        $user = Auth::user();
-        return view('events.dashboard', compact('events', 'user', 'banners'));
     }
 
     public function create()
@@ -78,6 +86,9 @@ class EventController extends Controller
             'penyelenggara' => 'required|string|max:255',
         ]);
 
+        // Tambahkan slug
+        $request['slug'] = Str::slug($request['name']);
+
         $imagePath = null;
         if ($request->hasFile('image')) {
             $imagePath = $request->file('image')->store('images', 'public');
@@ -95,15 +106,16 @@ class EventController extends Controller
             'image' => $imagePath,
             'kategori' => $request->kategori,
             'penyelenggara' => $request->penyelenggara,
+            'slug' => $request->slug,
         ]);
 
         return redirect()->route('events.dashboard')->with('success', 'Event berhasil dibuat!');
     }
 
     // Fungsi untuk menampilkan halaman edit event
-    public function edit($id)
+    public function edit($slug)
     {
-        $event = Event::findOrFail($id);
+        $event = Event::where('slug', $slug)->firstOrFail();
 
         $kategori = [
             'KTYME Islam',
@@ -123,7 +135,7 @@ class EventController extends Controller
     }
 
     // Fungsi untuk memperbarui event
-    public function update(Request $request, $id)
+    public function update(Request $request, $slug)
     {
         $request->validate([
             'name' => 'required|string|max:255',
@@ -139,7 +151,10 @@ class EventController extends Controller
             'penyelenggara' => 'required|string|max:255',
         ]);
 
-        $event = Event::findOrFail($id);
+        // Tambahkan slug
+        $request['slug'] = Str::slug($request['name']);
+
+        $event = Event::where('slug', $slug)->firstOrFail();
 
         $event->fill([
             'name' => $request->name,
@@ -152,6 +167,7 @@ class EventController extends Controller
             'type' => $request->type,
             'kategori' => $request->kategori,
             'penyelenggara' => $request->penyelenggara,
+            'slug' => $request->slug,
         ]);
 
         if ($request->hasFile('image')) {
@@ -165,29 +181,11 @@ class EventController extends Controller
     }
 
     // Fungsi untuk menampilkan detail event
-    public function show(Event $event)
+    public function show($slug)
     {
-        try {
-            $user = Auth::user();
-            $event->load(['ulasan.user', 'favouritedBy']);
-            
-
-            $startDate = Carbon::parse($event->start_date)->locale('id')->isoFormat('dddd, D MMMM YYYY');
-            $endDate = Carbon::parse($event->end_date)->locale('id')->isoFormat('dddd, D MMMM YYYY');
-            $jamMulai = Carbon::parse($event->jam_mulai)->format('H:i');
-            $jamSelesai = Carbon::parse($event->jam_selesai)->format('H:i');
-
-            return view('events.show', compact(
-                'event', 
-                'startDate', 
-                'endDate', 
-                'jamMulai', 
-                'jamSelesai', 
-                'user'
-            ));
-        } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Terjadi kesalahan saat menampilkan event.');
-        }
+        $event = Event::where('slug', $slug)->firstOrFail();
+        
+        return view('events.show', compact('event'));
     }
 
     // Fungsi untuk menyimpan review
@@ -205,7 +203,7 @@ class EventController extends Controller
             'comment' => $request->input('comment'),
         ]);
 
-        return redirect()->route('events.show', $eventId)->with('success', 'Review berhasil disimpan!');
+        return redirect()->route('events.show', $event->slug)->with('success', 'Review berhasil disimpan!');
     }
 
     // Fungsi untuk halaman event dengan filter
@@ -230,6 +228,12 @@ class EventController extends Controller
         $user = Auth::user();
 
         return view('events.eventonly', compact('user', 'events', 'tanggal', 'kategori'));
+    }
+
+    public function listEvents()
+    {
+        $events = Event::latest()->get();
+        return view('events.index', compact('events'));
     }
 
 }
