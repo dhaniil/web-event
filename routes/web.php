@@ -15,11 +15,26 @@ Route::get('/', function () {
     return redirect('/home');
 });
 
-Route::get('/login', function () {
-    return redirect('/auth?mode=login');
+Route::get('/login', function (\Illuminate\Http\Request $request) {
+    $params = ['mode' => 'login'];
+    
+    // Teruskan parameter view jika ada
+    if ($request->has('view')) {
+        $params['view'] = $request->query('view');
+    }
+    
+    return redirect()->route('auth', $params);
 })->name('login');
-Route::get('register', function () {
-    return redirect('/auth?mode=register');
+
+Route::get('register', function (\Illuminate\Http\Request $request) {
+    $params = ['mode' => 'register'];
+    
+    // Teruskan parameter view jika ada
+    if ($request->has('view')) {
+        $params['view'] = $request->query('view');
+    }
+    
+    return redirect()->route('auth', $params);
 })->name('register');
 
 Route::get('/home', [EventController::class, 'index'])->name('events.dashboard');

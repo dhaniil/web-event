@@ -4,7 +4,7 @@
     "name": "vendor"
   },
   "resources/css/app.css": {
-    "file": "assets/app-Bt5Zrktj.css",
+    "file": "assets/app-BUMdSBnI.css",
     "src": "resources/css/app.css",
     "isEntry": true
   },
@@ -20,7 +20,7 @@
     "isEntry": true
   },
   "resources/css/dashboard.css": {
-    "file": "assets/dashboard-4SjETgRc.css",
+    "file": "assets/dashboard-CaAw3lgm.css",
     "src": "resources/css/dashboard.css",
     "isEntry": true
   },
@@ -35,7 +35,7 @@
     "isEntry": true
   },
   "resources/css/filament/admin/theme.css": {
-    "file": "assets/theme-B9QKUTdt.css",
+    "file": "assets/theme-Cfb2q2PU.css",
     "src": "resources/css/filament/admin/theme.css",
     "isEntry": true
   },

@@ -13,8 +13,20 @@ use App\Http\Controllers\Auth\VerifyEmailController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
-    Route::get('/auth', function () {
-        return view('auth.auth');
+    Route::get('/auth', function (\Illuminate\Http\Request $request) {
+        $mode = $request->query('mode', 'login');
+        
+        // Untuk pengujian, izinkan parameter view=mobile untuk memaksa tampilan mobile
+        $forceView = $request->query('view');
+        if ($forceView === 'mobile') {
+            return view('auth.auth-mobile', ['defaultView' => $mode]);
+        }
+        
+        // Deteksi perangkat mobile
+        $agent = new \Jenssegers\Agent\Agent();
+        $view = $agent->isMobile() ? 'auth.auth-mobile' : 'auth.auth';
+        
+        return view($view, ['defaultView' => $mode]);
     })->name('auth');
     
     Route::post('/auth/register', [RegisteredUserController::class, 'store'])
